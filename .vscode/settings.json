@@ -52,6 +52,22 @@
         "expected": "cpp",
         "fstream": "cpp",
         "csignal": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "bitset": "cpp",
+        "chrono": "cpp",
+        "thread": "cpp",
+        "__bit_reference": "cpp",
+        "__functional_03": "cpp",
+        "__mutex_base": "cpp",
+        "__tuple": "cpp",
+        "filesystem": "cpp",
+        "stack": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "ratio": "cpp",
+        "mutex": "cpp",
+        "stop_token": "cpp",
+        "semaphore": "cpp",
+        "__nullptr": "cpp"
     }
 }
