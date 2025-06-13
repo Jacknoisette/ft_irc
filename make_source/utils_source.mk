@@ -6,10 +6,10 @@
 #    By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/27 14:19:23 by jdhallen          #+#    #+#              #
-#    Updated: 2025/06/11 18:17:36 by jdhallen         ###   ########.fr        #
+#    Updated: 2025/06/13 14:30:00 by jdhallen         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 UTILS_DIR = src/utils
 
-SRCS_UTILS = strToNbr.cpp
+SRCS_UTILS = utils.cpp

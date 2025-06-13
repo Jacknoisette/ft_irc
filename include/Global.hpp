@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/12 15:17:46 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/13 15:40:36 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,17 @@ T	strToNbr(std::string str){
 		throw (std::invalid_argument("Error in Conversion\nUnexpected character"));
 	return (result);
 }
+
+std::vector<std::string> cmd_parsing(char *string);
+std::vector<std::string> line_split(char *string);
+void sendRPL(int fd, const std::string& servername, 
+			const std::string& code, const std::string& nick,
+			const std::string& message);
+void sendRPL(int fd, const std::string& servername,
+			const std::string& code, const std::string& nick,
+			const std::string& host, const std::string& version,
+			const std::string& usermod, const std::string& channelmod);
+
 
 #endif
 
