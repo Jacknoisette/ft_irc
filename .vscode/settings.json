@@ -68,6 +68,10 @@
         "mutex": "cpp",
         "stop_token": "cpp",
         "semaphore": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "queue": "cpp",
+        "map": "cpp"
     }
 }

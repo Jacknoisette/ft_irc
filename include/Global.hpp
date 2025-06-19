@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/13 15:40:36 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/19 14:17:15 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,12 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <fstream>
+#include <string>
 #include <string.h>
+#include <map>
+#include <arpa/inet.h> 
+#include <cctype>
+#include <errno.h>
 
 # define RED "\033[1;30m"
 # define PURPLE "\033[1;31m"
@@ -41,6 +46,10 @@
 
 #ifndef BUFFER
 # define BUFFER 1024
+#endif
+
+#ifndef DEBUG
+# define DEBUG 0
 #endif
 
 // Fonction Template
