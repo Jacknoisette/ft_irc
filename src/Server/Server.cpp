@@ -6,11 +6,13 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 16:35:07 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/23 17:39:06 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/Server.hpp"
+
+std::map<std::string, void (Server::*)(int, std::vector<std::string>)> Server::cmd_func_list;
 
 Server::Server()
 	: port(6667), password(""), channels(), clients(), pollfds(){
@@ -40,6 +42,12 @@ Server &Server::operator=(const Server &src){
 		this->clients = src.clients;
 	}
 	return *this;
+}
+
+void Server::configure(void){
+	cmd_func_list["JOIN"] = &Server::join;
+	cmd_func_list["QUIT"] = &Server::quit;
+	cmd_func_list["PING"] = &Server::ping;
 }
 
 const std::string Server::getPassword(void) const{

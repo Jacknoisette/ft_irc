@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 16:23:27 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/12 15:25:25 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/23 17:26:46 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ int main(int argc, char **argv)
 	if (argc != 3)
 		return (std::cout << "Error Wrong Input:\n[./ircserv <port> <password>]" << std::endl, -1);
 	try{
+		server.configure();
 		server.parsing(argv);
 		server.server_creation();
 		while (1)

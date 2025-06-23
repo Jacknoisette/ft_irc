@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 12:44:40 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 15:56:03 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/23 17:59:58 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,21 @@ std::vector<std::string> cmd_parsing(std::string string){
 	}
 	return cmd;
 }
+
+// void sendRPL(int fd, ...) {
+// 	va_list args;
+// 	va_start(args, fd);
+// 	std::string rpl = ":";
+// 	const char *msg;
+// 	while (msg = va_arg(args, const char*) != NULL){
+		
+// 	}
+	
+// 	 + servername + " " + code + " " + nick + " :" + message + "\r\n";
+// 	send(fd, rpl.c_str(), rpl.size(), 0);
+// 	if (DEBUG)
+// 		std::cout << std::flush << rpl;
+// }
 
 void sendRPL(int fd, const std::string& servername,
 			const std::string& code, const std::string& nick,

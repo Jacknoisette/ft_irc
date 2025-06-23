@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 16:36:52 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/23 17:57:54 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@
 #include <arpa/inet.h> 
 #include <cctype>
 #include <errno.h>
+#include <cstdarg>
+#include <cstring>
 
 # define RED "\033[1;30m"
 # define PURPLE "\033[1;31m"

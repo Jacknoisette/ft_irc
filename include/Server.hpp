@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 16:28:26 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/23 17:31:24 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 
 class Server{
 	private :
+		static std::map<std::string, void (Server::*)(int, std::vector<std::string>)> cmd_func_list;
+
 		int port;
 		std::string password;
 		std::vector<Channel> channels;
@@ -30,6 +32,7 @@ class Server{
 		~Server(void);
 		Server(const Server &cpy);
 		Server &operator=(const Server &src);
+		void	configure(void);
 
 		void	parsing(char **argv);
 		void	server_creation(void);
@@ -61,7 +64,13 @@ class Server{
 
 		//CLIENT COMMAND
 		void	client_command(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);
+		void	check_BaseCmd(int fd, const std::vector<std::vector<std::string> > &cmd_group);
 		void	check_Auth(int fd, const std::vector<std::vector<std::string> > &cmd_group);
+
+		//COMMAND LIST
+		void	join(int fd, std::vector<std::string> arg);
+		void	quit(int fd, std::vector<std::string> arg);
+		void	ping(int fd, std::vector<std::string> arg);
 
 		//DEBUG
 		void	socket_debug(void);
