@@ -5,14 +5,14 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/13 14:30:02 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/19 14:13:42 by jdhallen         ###   ########.fr       */
+/*   Created: 2025/06/23 12:44:40 by jdhallen          #+#    #+#             */
+/*   Updated: 2025/06/23 15:56:03 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/Global.hpp"
 
-std::vector<std::string> line_split(char *string){
+std::vector<std::string> line_split(std::string string){
 	std::vector<std::string> group;
 	size_t pos = 0;
 	size_t tmp = 0;
@@ -27,77 +27,67 @@ std::vector<std::string> line_split(char *string){
 	return (group);
 }
 
-std::vector<std::string> cmd_parsing_base(char *string){
+std::vector<std::string> cmd_parsing_base(std::string string){
 	std::vector<std::string> cmd;
-	std::string str(string);
-	while (!str.empty() && (str[0] == ' ' || str[0] == '\t'))
-        str.erase(0, 1);
-    while (!str.empty() && (str[str.size() - 1] == ' ' || str[str.size() - 1] == '\t'))
-         str.erase(str.size() - 1, 1);
+	while (!string.empty() && (string[0] == ' ' || string[0] == '\t'))
+		string.erase(0, 1);
+	while (!string.empty() && (string[string.size() - 1] == ' ' || string[string.size() - 1] == '\t'))
+		string.erase(string.size() - 1, 1);
 	size_t start = 0;
-	size_t pos = 0;
-	while (start < str.size())
+	while (start < string.size())
 	{
-		pos = str.find(' ', pos);
-		if (pos == std::string::npos){
-			cmd.push_back(str.substr(start, pos - start));
-			break ;
-		}
-		cmd.push_back(str.substr(start, pos - start));
-        start = pos;
-        while (start < str.size() && (str[start] == ' ' || str[start] == '\t'))
+		size_t pos = string.find(' ', start);
+        if (pos == std::string::npos) {
+            cmd.push_back(string.substr(start));
+            break;
+        }
+        if (pos > start)
+            cmd.push_back(string.substr(start, pos-start));
+        start = pos+1;
+        while (start < string.size() && (string[start] == ' ' || string[start] == '\t'))
             start++;
 	}
 	return (cmd);
 }
 
-std::vector<std::string> cmd_parsing(char *string){
+std::vector<std::string> cmd_parsing(std::string string){
 	std::vector<std::string> cmd;
-	std::string str(string);
-	std::string after(string);
-	size_t before = 0;
-	before = str.find(':', 0);
-	if (before != str.size()){
-		cmd = cmd_parsing_base(const_cast<char *>(str.substr(0, before).c_str()));
-		cmd.push_back(str.substr(before, str.size() - before));
+	size_t colon = string.find(':');
+	if (colon != std::string::npos) {
+		std::vector<std::string> base = cmd_parsing_base(string.substr(0, colon));
+		cmd.insert(cmd.end(), base.begin(), base.end());
+		std::string trailing = string.substr(colon + 1);
+		if (!trailing.empty())
+			cmd.push_back(trailing);
+	} else {
+		cmd = cmd_parsing_base(string);
 	}
-	else{
-		cmd = cmd_parsing(string);
-	}
-	return (cmd);
+	return cmd;
 }
 
 void sendRPL(int fd, const std::string& servername,
 			const std::string& code, const std::string& nick,
 			const std::string& message) {
-    std::string rpl = ":" + servername + " " + code + " " + nick + " :" + message + "\r\n";
-    send(fd, rpl.c_str(), rpl.size(), 0);
-	std::cout << rpl << std::endl;
+	std::string rpl = ":" + servername + " " + code + " " + nick + " :" + message + "\r\n";
+	send(fd, rpl.c_str(), rpl.size(), 0);
+	if (DEBUG)
+		std::cout << std::flush << rpl;
 }
 
 void sendRPL(int fd, const std::string& servername,
 				const std::string& code, const std::string& nick,
 				const std::string& host, const std::string& version,
 				const std::string& usermod, const std::string& channelmod) {
-    std::string rpl = ":" + servername + " " + code + " " + nick + " " + host + " " + version + " " + usermod + " " + channelmod + "\r\n";
-    send(fd, rpl.c_str(), rpl.size(), 0);
-	std::cout << rpl << std::endl;
+	std::string rpl = ":" + servername + " " + code + " " + nick + " " + host + " " + version + " " + usermod + " " + channelmod + "\r\n";
+	send(fd, rpl.c_str(), rpl.size(), 0);
+	if (DEBUG)
+		std::cout << std::flush << rpl;
 }
 
-// int main(int argc, char **argv){
-// 	if (argc < 2)
-// 		return 1;
-// 	std::cout << argv[1] << std::endl;
-// 	std::vector<std::string> cmd = cmd_parsing(argv[1]);
-// 	for (size_t i = 0; i < cmd.size(); i++)
-// 		std::cout << cmd[i] << "-";
-// 	std::cout << std::endl;
-// }
+std::string to_string(int value) {
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
+}
 
-// int main(){
-// 	std::string line = "NICK foo\r\nUSER bar 0 * :baz\r\n";
-// 	std::vector<std::string> cmd = line_split(const_cast<char *>(line.c_str()));
-// 	for (size_t i = 0; i < cmd.size(); i++)
-// 		std::cout << cmd[i] << "-";
-// 	std::cout << std::endl;
-// }
+

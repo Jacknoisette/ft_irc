@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/19 14:17:15 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/23 16:36:52 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,10 @@
 #endif
 
 #ifndef DEBUG
-# define DEBUG 0
+# define DEBUG 1
 #endif
 
-// Fonction Template
+//TEMPLATE FUNCTION
 
 template <typename T>
 T	strToNbr(std::string str){
@@ -69,8 +69,32 @@ T	strToNbr(std::string str){
 	return (result);
 }
 
-std::vector<std::string> cmd_parsing(char *string);
-std::vector<std::string> line_split(char *string);
+template <typename T, typename M>
+std::string error(T error_title, M message){
+	return RED + std::string("Error ") + std::string(error_title) + "\n"
+		+ std::string(message) + RESET;
+}
+
+template <typename T, typename M>
+std::string warning(T warning_title, M message){
+	return YELLOW + std::string("Warning ") + std::string(warning_title) + "\n"
+		+ std::string(message) + RESET;
+}
+
+template <typename M>
+std::string info(M message){
+	return GREY + std::string(message) + RESET;
+}
+
+template <typename M>
+std::string confirm(M message){
+	return GREEN + std::string("IRC : ") + std::string(message) + RESET;
+}
+
+//UNIVERSAL FUNCTION
+
+std::vector<std::string> cmd_parsing(std::string string);
+std::vector<std::string> line_split(std::string string);
 void sendRPL(int fd, const std::string& servername, 
 			const std::string& code, const std::string& nick,
 			const std::string& message);
@@ -79,6 +103,7 @@ void sendRPL(int fd, const std::string& servername,
 			const std::string& host, const std::string& version,
 			const std::string& usermod, const std::string& channelmod);
 
+std::string to_string(int value);
 
 #endif
 

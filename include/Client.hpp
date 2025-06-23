@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 16:36:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/16 17:53:47 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/19 16:24:33 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,9 @@ class Client{
         bool authenticated;
         bool is_in_channel;
         std::string channel;
-        // struct pollfd pollfd;
 	public :
 		Client(void);
-		Client(int _client_fd);//, struct pollfd &_pollfd);
+		Client(int _client_fd);
 		~Client(void);
 		Client(const Client &cpy);
 		Client &operator=(const Client &src);
@@ -39,7 +38,6 @@ class Client{
         bool		        getAuthenticated(void) const;
         bool			getIsInChannel(void) const;
         const std::string	getChannel(void) const;
-        // const struct pollfd	&getPollfd(void) const;
         void setClientfd(int _client_fd);
         void setNickname(std::string _nickname);
         void setUsername(std::string _username);
@@ -47,8 +45,6 @@ class Client{
         void setAuthenticated(bool _authenticated);
         void setIsInChannel(bool _is_in_channel);
         void setChannel(std::string _channel);
-        // void setPollfd(struct pollfd &_pollfd);
-        // void setPollfdFd(int _fd);
 };
 
 #endif

@@ -72,6 +72,7 @@
         "__hash_table": "cpp",
         "__split_buffer": "cpp",
         "queue": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "__tree": "cpp"
     }
 }
