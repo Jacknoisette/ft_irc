@@ -97,6 +97,7 @@ std::string confirm(M message){
 
 std::vector<std::string> cmd_parsing(std::string string);
 std::vector<std::string> line_split(std::string string);
+void sendRPL(int fd, ...);
 void sendRPL(int fd, const std::string& servername, 
 			const std::string& code, const std::string& nick,
 			const std::string& message);
