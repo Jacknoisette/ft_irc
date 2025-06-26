@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 12:44:40 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/25 13:25:19 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/26 15:30:39 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,9 @@ std::vector<std::string> line_split(std::string string){
 
 std::vector<std::string> cmd_parsing_base(std::string string){
 	std::vector<std::string> cmd;
-	while (!string.empty() && (string[0] == ' ' || string[0] == '\t'))
+	while (!string.empty() && (string[0] == ' ' || string[0] == '\t' || string[0] == '\n' || string[0] == '\r'))
 		string.erase(0, 1);
-	while (!string.empty() && (string[string.size() - 1] == ' ' || string[string.size() - 1] == '\t'))
+	while (!string.empty() && (string[string.size() - 1] == ' ' || string[string.size() - 1] == '\t' || string[string.size() - 1] == '\n' || string[string.size() - 1] == '\r'))
 		string.erase(string.size() - 1, 1);
 	size_t start = 0;
 	while (start < string.size())
@@ -72,7 +72,7 @@ void sendRPL(int fd, ...) {
 	std::string rpl = ":";
 	const char *msg;
 	while ((msg = va_arg(args, const char*)) != NULL)
-		rpl += msg;
+		rpl += msg + std::string(" ");
 	rpl += "\r\n";
 	send(fd, rpl.c_str(), rpl.size(), 0);
 	if (DEBUG)
@@ -80,29 +80,22 @@ void sendRPL(int fd, ...) {
 	va_end(args);
 }
 
-// void sendRPL(int fd, const std::string& servername,
-// 			const std::string& code, const std::string& nick,
-// 			const std::string& message) {
-// 	std::string rpl = ":" + servername + " " + code + " " + nick + " :" + message + "\r\n";
-// 	send(fd, rpl.c_str(), rpl.size(), 0);
-// 	if (DEBUG)
-// 		std::cout << std::flush << WHITE << rpl;
-// }
-
-// void sendRPL(int fd, const std::string& servername,
-// 				const std::string& code, const std::string& nick,
-// 				const std::string& host, const std::string& version,
-// 				const std::string& usermod, const std::string& channelmod) {
-// 	std::string rpl = ":" + servername + " " + code + " " + nick + " " + host + " " + version + " " + usermod + " " + channelmod + "\r\n";
-// 	send(fd, rpl.c_str(), rpl.size(), 0);
-// 	if (DEBUG)
-// 		std::cout << std::flush << WHITE << rpl;
-// }
-
 std::string to_string(int value) {
 	std::stringstream ss;
 	ss << value;
 	return ss.str();
 }
 
-
+bool	check_channel_name(int fd, std::string arg){
+	if (arg.size() > 50)
+		return (sendRPL(fd, "Channel name too long"), false);
+	if (arg.size() <= 1)
+		return (sendRPL(fd, "Channel name too little"), false);
+	if (arg[0] != '#')
+		return (sendRPL(fd, "Channel name don't start by '#'"), false);
+	for (size_t i = 0; i < arg.size(); i++){
+		if (arg[i] <= 32 || arg[i] == ',' || arg[i] == ':')
+			return (sendRPL(fd, "Channel name contains incorrect char"), false);
+	}
+	return true;
+}

@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:22:36 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/26 12:06:19 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/26 15:14:57 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,7 @@ void Server::client_command(int client_fd, const std::vector<std::vector<std::st
 	check_Auth(client_fd, cmd_group);
 	if (!clients[client_fd].getAuthenticated())
 		return ;
-	if (!clients[client_fd].getIsInChannel())
-		check_BaseCmd(client_fd, cmd_group);
+	check_BaseCmd(client_fd, cmd_group);
 }
 
 void Server::check_BaseCmd(int fd, const std::vector<std::vector<std::string> > &cmd_group){
@@ -49,8 +48,10 @@ void Server::check_Auth(int fd, const std::vector<std::vector<std::string> > &cm
 				clients[fd].setUsername((*cmd)[1]);
 				clients[fd].setHostname((*cmd)[2]);
 			}
-			if ((*cmd)[0] == "QUIT" && (*cmd).size() >= 1)
+			
+			if ((*cmd)[0] == "QUIT" && (*cmd).size() >= 1){
 				quit(fd, (*cmd));
+			}
 		}
 		
 		if (clients[fd].getNickname() != ""

@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/25 13:24:43 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/26 14:47:14 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,15 +97,8 @@ std::string confirm(M message){
 
 std::vector<std::string> cmd_parsing(std::string string);
 std::vector<std::string> line_split(std::string string);
-void sendRPL(int fd, ...);
-// void sendRPL(int fd, const std::string& servername, 
-// 			const std::string& code, const std::string& nick,
-// 			const std::string& message);
-// void sendRPL(int fd, const std::string& servername,
-// 			const std::string& code, const std::string& nick,
-// 			const std::string& host, const std::string& version,
-// 			const std::string& usermod, const std::string& channelmod);
-
+bool	check_channel_name(int fd, std::string arg);
+void	sendRPL(int fd, ...);
 std::string to_string(int value);
 
 #endif
