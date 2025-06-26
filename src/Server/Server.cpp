@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 17:39:06 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/26 11:16:17 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 std::map<std::string, void (Server::*)(int, std::vector<std::string>)> Server::cmd_func_list;
 
 Server::Server()
-	: port(6667), password(""), channels(), clients(), pollfds(){
+	: port(6667), password(""), channels(), clients(), pollfds(), garbage(){
 }
 
 Server::Server(int _port, std::string _password)
-	: port(_port), password(_password), channels(), clients(), pollfds(){
+	: port(_port), password(_password), channels(), clients(), pollfds(), garbage(){
 }
 
 Server::~Server(){
@@ -40,6 +40,7 @@ Server &Server::operator=(const Server &src){
 		this->password = src.password;
 		this->channels = src.channels;
 		this->clients = src.clients;
+		this->garbage = src.garbage;
 	}
 	return *this;
 }

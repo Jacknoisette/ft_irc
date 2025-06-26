@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 12:44:40 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 17:59:58 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/25 13:25:19 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ std::vector<std::string> cmd_parsing(std::string string){
 	return cmd;
 }
 
-//  + servername + " " + code + " " + nick + " :" + message + 
+//Enter fd and any const char * to create the rpl msg
 void sendRPL(int fd, ...) {
 	va_list args;
 	va_start(args, fd);
@@ -76,28 +76,28 @@ void sendRPL(int fd, ...) {
 	rpl += "\r\n";
 	send(fd, rpl.c_str(), rpl.size(), 0);
 	if (DEBUG)
-		std::cout << std::flush << rpl;
+		std::cout << std::flush << WHITE << rpl;
 	va_end(args);
 }
 
-void sendRPL(int fd, const std::string& servername,
-			const std::string& code, const std::string& nick,
-			const std::string& message) {
-	std::string rpl = ":" + servername + " " + code + " " + nick + " :" + message + "\r\n";
-	send(fd, rpl.c_str(), rpl.size(), 0);
-	if (DEBUG)
-		std::cout << std::flush << rpl;
-}
+// void sendRPL(int fd, const std::string& servername,
+// 			const std::string& code, const std::string& nick,
+// 			const std::string& message) {
+// 	std::string rpl = ":" + servername + " " + code + " " + nick + " :" + message + "\r\n";
+// 	send(fd, rpl.c_str(), rpl.size(), 0);
+// 	if (DEBUG)
+// 		std::cout << std::flush << WHITE << rpl;
+// }
 
-void sendRPL(int fd, const std::string& servername,
-				const std::string& code, const std::string& nick,
-				const std::string& host, const std::string& version,
-				const std::string& usermod, const std::string& channelmod) {
-	std::string rpl = ":" + servername + " " + code + " " + nick + " " + host + " " + version + " " + usermod + " " + channelmod + "\r\n";
-	send(fd, rpl.c_str(), rpl.size(), 0);
-	if (DEBUG)
-		std::cout << std::flush << rpl;
-}
+// void sendRPL(int fd, const std::string& servername,
+// 				const std::string& code, const std::string& nick,
+// 				const std::string& host, const std::string& version,
+// 				const std::string& usermod, const std::string& channelmod) {
+// 	std::string rpl = ":" + servername + " " + code + " " + nick + " " + host + " " + version + " " + usermod + " " + channelmod + "\r\n";
+// 	send(fd, rpl.c_str(), rpl.size(), 0);
+// 	if (DEBUG)
+// 		std::cout << std::flush << WHITE << rpl;
+// }
 
 std::string to_string(int value) {
 	std::stringstream ss;

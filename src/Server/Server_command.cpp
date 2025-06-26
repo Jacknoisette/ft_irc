@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 17:08:49 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 17:36:04 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/26 11:21:52 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,7 @@ void	Server::join(int fd, std::vector<std::string> arg){
 
 void	Server::quit(int fd, std::vector<std::string> arg){
 	(void)arg;
-	(void)fd;
-	// removeClient(fd);
-	// close(fd);
-	// it = pollfds.erase(it);
+	garbage.push_back(fd);
 	std::cout << info("Someone wants to quit") << std::endl;
 }
 
@@ -31,7 +28,8 @@ void	Server::ping(int fd, std::vector<std::string> arg){
 	std::string token;
     if (arg.size() > 1)
         token = arg[1];
-    else
-        token = "";
-	sendRPL(fd, "PONG", " :", token.c_str(), NULL);
+    else {
+        token = " ";
+	}
+	sendRPL(fd, "PONG", " :", token.c_str());
 }
