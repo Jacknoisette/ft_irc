@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 16:02:28 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 16:07:49 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/25 14:06:37 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void Server::command_debug(int client_fd, const std::vector<std::vector<std::str
 		{
 			std::cout << std::flush << "Cmd " << group << " :";
 			for (size_t cmd = 0; cmd < cmd_group[group].size(); cmd++){
-				std::cout << std::flush << "{" << cmd_group[group][cmd] << "}" << " ";
+				std::cout << std::flush << cmd_group[group][cmd] << " ";
 			}	
 			std::cout << std::endl;
 		}

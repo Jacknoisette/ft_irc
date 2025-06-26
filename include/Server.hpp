@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 17:31:24 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/26 12:39:28 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class Server{
 		std::vector<Channel> channels;
 		std::map<int, Client> clients;
 		std::vector<struct pollfd> pollfds;
+		std::vector<int> garbage;
 	public :
 		Server(void);
 		Server(int _port, std::string _password);
@@ -43,6 +44,7 @@ class Server{
 		void	add_new_client(void);
 		std::string analyse_line(int client_fd, std::vector<pollfd>::iterator &it);
 		void	detect_client_input(void);
+		void	take_out_the_trash();
 		// void enter_command(void);
 		// void channel_update(void);
 

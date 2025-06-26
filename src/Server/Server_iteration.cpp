@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:19:42 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 16:29:39 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/26 12:52:44 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,11 +75,9 @@ std::string Server::analyse_line(int client_fd, std::vector<pollfd>::iterator &i
 			++it;
 			throw std::runtime_error(warning("Read", std::string("reading from client ") + to_string(client_fd) + std::string(": ")));
 		}
-		removeClient(client_fd);
-		close(client_fd);
-		it = pollfds.erase(it);
+		garbage.push_back(client_fd);
 		if (read_size == 0)
-			throw std::runtime_error(info("A client leaved the irc server !"));
+			return "";
 		else if (read_size < 0)
 			throw std::runtime_error(warning("Read", std::string("reading from client ") + to_string(client_fd) + std::string(": ")));
 	}
@@ -94,9 +92,7 @@ void Server::detect_client_input(){
 	{			
 		if (it->revents & (POLLERR | POLLHUP | POLLNVAL)) {
 			std::cout << "Error event detected on client " << it->fd << std::endl;
-			removeClient(it->fd);
-			close(it->fd);
-			it = pollfds.erase(it);
+			garbage.push_back(it->fd);
 			continue;
 		}
 		
@@ -126,7 +122,22 @@ void Server::detect_client_input(){
 	}
 }
 
-void Server::server_iteration(){
+void	Server::take_out_the_trash(){
+	for (size_t i = 0; i < garbage.size(); i++){
+		std::cout << info((std::string("A client leaved the irc server ! with fd ") + to_string(garbage[i])).c_str()) << std::endl;
+		removeClient(garbage[i]);
+		for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); it++){
+			if (it->fd == garbage[i]){
+				it = pollfds.erase(it);
+				break ;
+			}
+		}
+		close(garbage[i]);
+	}
+	garbage.clear();
+}
+
+void	Server::server_iteration(){
 	for (size_t i = 0; i < pollfds.size(); ++i)
 		pollfds[i].revents = 0;
 	int client_event_nbr = poll(&this->pollfds[0], pollfds.size(), -1);
@@ -143,7 +154,6 @@ void Server::server_iteration(){
 	if (pollfds[0].revents & POLLIN){
 		add_new_client();
 	}
-	else {
-		detect_client_input();
-	}
+	detect_client_input();
+	take_out_the_trash();
 }
