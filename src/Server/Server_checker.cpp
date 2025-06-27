@@ -48,10 +48,8 @@ void Server::check_Auth(int fd, const std::vector<std::vector<std::string> > &cm
 				clients[fd].setUsername((*cmd)[1]);
 				clients[fd].setHostname((*cmd)[2]);
 			}
-			
-			if ((*cmd)[0] == "QUIT" && (*cmd).size() >= 1){
+			if ((*cmd)[0] == "QUIT" && (*cmd).size() >= 1)
 				quit(fd, (*cmd));
-			}
 		}
 		
 		if (clients[fd].getNickname() != ""

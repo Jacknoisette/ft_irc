@@ -94,9 +94,9 @@ std::string confirm(M message){
 }
 
 //UNIVERSAL FUNCTION
-
-std::vector<std::string>	cmd_parsing(std::string string);
-std::vector<std::string>	line_split(std::string string);
+std::vector<std::string> cmd_parsing(std::string string);
+std::vector<std::string> line_split(std::string string);
+void sendRPL(int fd, ...);
 
 std::vector<std::string>	check_channel_name(int fd, std::string arg);
 std::vector<std::string>	check_key_string(int fd, std::string arg);
