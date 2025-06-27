@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 17:08:49 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 12:28:48 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/27 13:57:42 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ void	Server::join(int fd, std::vector<std::string> arg){
 		else{
 			Channel new_channel(*it);
 			new_channel.addClient(fd, clients[fd]);
-			std::cout << std::flush << "hello\n";
 			channels[*it] = new_channel;
 			clients[fd].addChannel(channels[*it]);
 			std::cout << info(std::string("New channel " + *it + " created").c_str()) << std::endl;

@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 12:38:35 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/27 13:59:58 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,15 @@ const std::string	Channel::getName(void) const{
 	return name;
 }
 
-const std::map<int, Client>	Channel::getClients(void) const{
+const std::map<int, std::pair<Client, bool> >	Channel::getClients(void) const{
 	return clients_list;
 }
 
 void	Channel::addClient(int client_fd, Client new_client){
-	clients_list[client_fd] = new_client;
+	std::pair<Client, bool> client_def;
+	client_def.first = new_client;
+	client_def.second = false;
+	clients_list[client_fd] = client_def;
 }
 
 void	Channel::removeClient(int fd){
