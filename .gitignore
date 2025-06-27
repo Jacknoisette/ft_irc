@@ -1,0 +1,17 @@
+# Ignorer tous les fichiers
+*
+
+# Mais garder les répertoires (nécessaire pour naviguer)
+!*/
+
+# Autoriser seulement certaines extensions
+!*.cpp
+!*.hpp
+!*.tpp
+!*.ipp
+!*.mk
+!Makefile
+
+
+# Toujours garder le .gitignore lui-même
+!.gitignore
