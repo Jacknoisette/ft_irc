@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/Global.hpp"
+#include "Global.hpp"
+#include "Server.hpp"
 
 std::vector<std::string> line_split(std::string string){
 	std::vector<std::string> group;
@@ -161,3 +162,4 @@ void	check_msg_string(int fd, std::string arg){
 	}
 	return ;
 }
+

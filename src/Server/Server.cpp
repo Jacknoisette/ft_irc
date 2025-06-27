@@ -10,9 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/Server.hpp"
+#include "Server.hpp"
 
 std::map<std::string, void (Server::*)(int, std::vector<std::string>)> Server::cmd_func_list;
+volatile sig_atomic_t Server::shutdownRequested = false;
 
 Server::Server()
 	: port(6667), password(""), channels(), clients(), pollfds(), garbage(){
@@ -138,6 +139,13 @@ void Server::server_creation(){
 	server.events = POLLIN;
 	server.revents = 0;
 	pollfds.push_back(server);
+}
+
+void Server::signalHandler(int sig)
+{
+	(void)sig;
+	Server::shutdownRequested = true;
+	return;
 }
 
 // void Server::enter_command(void){

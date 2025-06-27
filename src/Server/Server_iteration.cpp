@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/Server.hpp"
+#include "Server.hpp"
+#include "Global.hpp"
 
 std::string Server::make_client_nonblock(int client_fd, sockaddr_in &client_addr){
 	char client_ip[INET_ADDRSTRLEN];
@@ -141,12 +142,20 @@ void	Server::take_out_the_trash(){
 	garbage.clear();
 }
 
-void	Server::server_iteration(){
+void	Server::server_iteration()
+{
+	struct sigaction sa;
+	sa.sa_handler = signalHandler;
+	sigemptyset(&sa.sa_mask);
+	if (sigaction(SIGINT, &sa, NULL) == -1 || sigaction(SIGQUIT, &sa, NULL) == -1)
+		throw (std::runtime_error("handler installation failed"));
 	for (size_t i = 0; i < pollfds.size(); ++i)
 		pollfds[i].revents = 0;
 	int client_event_nbr = poll(&this->pollfds[0], pollfds.size(), -1);
 	if (DEBUG)
 		std::cout << client_event_nbr << std::endl;
+	if (shutdownRequested)
+		throw (std::runtime_error("stopping server..."));
 	if (client_event_nbr < 0){
 		std::cout << error("Socket creation", "Server crash") << std::endl;
 		return ;

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/Server.hpp"
+#include "Server.hpp"
 
 void Server::client_command(int client_fd, const std::vector<std::vector<std::string> > &cmd_group){
 	check_Auth(client_fd, cmd_group);

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/Channel.hpp"
+#include "Channel.hpp"
 
 Channel::Channel()
 	: name("#channel"), clients_list(){

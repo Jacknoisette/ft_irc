@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <cstdarg>
 #include <cstring>
+#include <csignal>
 
 # define RED "\033[1;30m"
 # define PURPLE "\033[1;31m"
@@ -51,7 +52,7 @@
 #endif
 
 #ifndef DEBUG
-# define DEBUG 1
+# define DEBUG 0
 #endif
 
 //TEMPLATE FUNCTION
@@ -102,8 +103,8 @@ std::vector<std::string>	check_channel_name(int fd, std::string arg);
 std::vector<std::string>	check_key_string(int fd, std::string arg);
 void	check_msg_string(int fd, std::string arg);
 
-void	sendRPL(int fd, ...);
 std::string to_string(int value);
+void signalHandler(int sig);
 
 #endif
 

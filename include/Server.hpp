@@ -20,6 +20,7 @@
 class Server{
 	private :
 		static std::map<std::string, void (Server::*)(int, std::vector<std::string>)> cmd_func_list;
+		static volatile sig_atomic_t shutdownRequested;
 
 		int port;
 		std::string password;
@@ -61,6 +62,7 @@ class Server{
 		void	addClient(Client &_new_client);
 		void	removeChannel(std::string _channel_name);
 		void	removeClient(int fd);
+		static void signalHandler(int sig);
 
 		//CLIENT COMMAND
 		void	client_command(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);

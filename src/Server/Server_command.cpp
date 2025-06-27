@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/Server.hpp"
+#include "Server.hpp"
 
 void	Server::join(int fd, std::vector<std::string> arg){
 	if (arg.size() < 2){

@@ -1,44 +1,32 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/03/04 14:28:56 by jdhallen          #+#    #+#              #
-#    Updated: 2025/06/11 18:20:04 by jdhallen         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 include make_source/source.mk
 
-NAME = ircserv
-CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
-CPPFLAGS = -Iinclude
-OBJ_DIR = obj
-SRCS = main.cpp $(SRCS_SERV) $(SRCS_UTILS)
-OBJS = $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
+NAME := ircserv
+CXX := c++
+CXXFLAGS := -Wall -Wextra -Werror -std=c++98
+CPPFLAGS := -Iinclude
+SRC_DIR := src
+OBJ_DIR := obj
+SRCS := main.cpp $(SRCS_SERV) $(SRCS_UTILS)
+OBJS := $(SRCS:.cpp=.o)
+VPATH := $(SRC_DIR):$(OBJ_DIR)
+OUTPUT_OPTION = -o $(OBJ_DIR)/$@
 
-all: $(NAME)
+all: $(OBJ_DIR) $(NAME)
 
 $(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+	mkdir -p $@
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJS)) -o $@
 
-$(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR)
-	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
-
-debug: CXXFLAGS += -D_GLIBCXX_DEBUG -g3
+debug: CXXFLAGS += -D_GLIBCXX_DEBUG -g3 -DDEBUG=1
 debug: re
 
 clean:
-	@rm -f $(OBJS)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
-	@rm -f $(NAME)
+	rm -rf $(NAME)
 
 re: fclean all
 
