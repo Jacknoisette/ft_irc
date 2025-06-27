@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 16:57:17 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/27 12:38:35 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,10 @@
 
 Channel::Channel()
 	: name("#channel"), clients_list(){
-	std::cout << "New channel " << name << " created" << std::endl;
 }
 
 Channel::Channel(std::string _name)
 	: name(_name), clients_list(){
-	std::cout << "New channel " << name << " created" << std::endl;
 }
 
 Channel::~Channel(){
@@ -30,7 +28,7 @@ Channel::Channel(const Channel &cpy){
 	*this = cpy;
 }
 
-Channel Channel::operator=(const Channel &src){
+Channel &Channel::operator=(const Channel &src){
 	if (this != &src)
 	{
 		this->name = src.name;
@@ -51,20 +49,9 @@ void	Channel::addClient(int client_fd, Client new_client){
 	clients_list[client_fd] = new_client;
 }
 
-void	Channel::removeClient(std::string _client_name){
-	for (std::map<int, Client>::iterator it = clients_list.begin(); it != clients_list.end(); it++){
-		if (it->second.getNickname() == _client_name){
-			clients_list.erase(it);
-			break ;
-		}
-	}
-}
-
 void	Channel::removeClient(int fd){
-	for (std::map<int, Client>::iterator it = clients_list.begin(); it != clients_list.end(); it++){
-		if (it->second.getClientfd() == fd){
-			clients_list.erase(it);
-			break ;
-		}
-	}
+	if (clients_list.find(fd) != clients_list.end())
+		clients_list.erase(fd);
+	if (DEBUG)
+		std::cout << info(std::string("A client with fd " + to_string(fd) + ", leaved the channel " + name +  "!").c_str())<< std::endl;
 }

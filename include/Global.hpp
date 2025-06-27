@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/26 14:47:14 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/27 11:44:32 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,9 +95,13 @@ std::string confirm(M message){
 
 //UNIVERSAL FUNCTION
 
-std::vector<std::string> cmd_parsing(std::string string);
-std::vector<std::string> line_split(std::string string);
-bool	check_channel_name(int fd, std::string arg);
+std::vector<std::string>	cmd_parsing(std::string string);
+std::vector<std::string>	line_split(std::string string);
+
+std::vector<std::string>	check_channel_name(int fd, std::string arg);
+std::vector<std::string>	check_key_string(int fd, std::string arg);
+void	check_msg_string(int fd, std::string arg);
+
 void	sendRPL(int fd, ...);
 std::string to_string(int value);
 

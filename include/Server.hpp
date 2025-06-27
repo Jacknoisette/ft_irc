@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/26 12:39:28 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/27 12:23:01 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ class Server{
 
 		int port;
 		std::string password;
-		std::vector<Channel> channels;
+		std::map<std::string, Channel> channels;
 		std::map<int, Client> clients;
 		std::vector<struct pollfd> pollfds;
 		std::vector<int> garbage;
@@ -51,17 +51,15 @@ class Server{
 		//GET/SETTER/UTILS
 		const std::string			getPassword(void) const;
 		int							getPort(void) const;
-		const	std::vector<Channel>	getChannels(void) const;
+		const	std::map<std::string, Channel> 	getChannels(void) const;
 		const	std::map<int, Client>	getClients(void) const;
-		const	Channel	&getChannel(std::string _name) const;
 
 		void	setPassword(std::string _password);
 		void	setPort(int _port);
+		
 		void	addChannel(Channel &_new_channel);
 		void	addClient(Client &_new_client);
-
 		void	removeChannel(std::string _channel_name);
-		void	removeClient(std::string _client_name);
 		void	removeClient(int fd);
 
 		//CLIENT COMMAND
@@ -71,6 +69,7 @@ class Server{
 
 		//COMMAND LIST
 		void	join(int fd, std::vector<std::string> arg);
+		void	leave(int fd, std::vector<std::string> arg);
 		void	quit(int fd, std::vector<std::string> arg);
 		void	ping(int fd, std::vector<std::string> arg);
 

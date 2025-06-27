@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/26 11:16:17 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/27 12:22:15 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ Server &Server::operator=(const Server &src){
 
 void Server::configure(void){
 	cmd_func_list["JOIN"] = &Server::join;
+	cmd_func_list["LEAVE"] = &Server::leave;
 	cmd_func_list["QUIT"] = &Server::quit;
 	cmd_func_list["PING"] = &Server::ping;
 }
@@ -59,19 +60,12 @@ int Server::getPort(void) const{
 	return port;
 }
 
-const std::vector<Channel>	Server::getChannels(void) const{
+const std::map<std::string, Channel> 	Server::getChannels(void) const{
 	return channels;
 }
 
 const std::map<int, Client>	Server::getClients(void) const{
 	return clients;
-}
-
-const Channel	&Server::getChannel(std::string _name) const{
-	for (size_t i = 0; i < channels.size(); i++)
-		if (channels[i].getName() == _name)
-			return channels[i];
-	throw std::exception();
 }
 
 void Server::setPassword(std::string _password){
@@ -83,7 +77,7 @@ void Server::setPort(int _port){
 }
 
 void Server::addChannel(Channel &_new_channel){
-	channels.push_back(_new_channel);
+	channels[_new_channel.getName()] = _new_channel;
 }
 
 void Server::addClient(Client &_new_client){
@@ -91,28 +85,13 @@ void Server::addClient(Client &_new_client){
 }
 
 void Server::removeChannel(std::string _channel_name){
-	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++){
-		if (it->getName() == _channel_name)
-			channels.erase(it);
-	}
-}
-
-void Server::removeClient(std::string _client_name){
-	for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); it++){
-		if (it->second.getNickname() == _client_name){
-			clients.erase(it);
-			break ;
-		}
-	}
+	if (channels.find(_channel_name) != channels.end())
+		channels.erase(_channel_name);
 }
 
 void Server::removeClient(int fd){
-	for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); it++){
-		if (it->second.getClientfd() == fd){
-			clients.erase(it);
-			break ;
-		}
-	}
+	if (clients.find(fd) != clients.end())
+		clients.erase(fd);
 }
 
 void Server::parsing(char **argv){

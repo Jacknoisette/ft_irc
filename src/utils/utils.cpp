@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 12:44:40 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/26 15:30:39 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/27 11:44:23 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,16 +86,78 @@ std::string to_string(int value) {
 	return ss.str();
 }
 
-bool	check_channel_name(int fd, std::string arg){
-	if (arg.size() > 50)
-		return (sendRPL(fd, "Channel name too long"), false);
-	if (arg.size() <= 1)
-		return (sendRPL(fd, "Channel name too little"), false);
-	if (arg[0] != '#')
-		return (sendRPL(fd, "Channel name don't start by '#'"), false);
-	for (size_t i = 0; i < arg.size(); i++){
-		if (arg[i] <= 32 || arg[i] == ',' || arg[i] == ':')
-			return (sendRPL(fd, "Channel name contains incorrect char"), false);
+std::vector<std::string>	parsing_channel(std::string arg){
+	std::vector<std::string>	channel_list;
+	size_t start = 0;
+	while (start < arg.size())
+	{
+		size_t pos = arg.find(',', start);
+        if (pos == std::string::npos) {
+            channel_list.push_back(arg.substr(start));
+            break;
+        }
+        if (pos > start)
+            channel_list.push_back(arg.substr(start, pos-start));
+        start = pos + 1;
 	}
-	return true;
+	return channel_list;
+}
+
+std::vector<std::string> check_channel_name(int fd, std::string arg){
+	if (arg.size() > 50){
+		sendRPL(fd, "Channel name too long");
+		throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+	}
+	if (arg.size() <= 1){
+		sendRPL(fd, "Channel name too little");
+		throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+	}
+	if (arg[0] != '#')
+	{
+		sendRPL(fd, "Channel name don't start by '#'");
+		throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+	}
+	for (size_t i = 0; i < arg.size(); i++){
+		if (arg[i] <= 32 || arg[i] == ':'){
+			sendRPL(fd, "Channel name contains incorrect char");
+			throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+		}
+	}
+	return parsing_channel(arg);
+}
+
+std::vector<std::string>	check_key_string(int fd, std::string arg){
+	if (arg.size() > 23){
+		sendRPL(fd, "Key name too long");
+		throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+	}
+	if (arg.size() < 0){
+		sendRPL(fd, "Key too little");
+		throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+	}
+	for (size_t i = 0; i < arg.size(); i++){
+		if (arg[i] <= 32 || arg[i] == ':'){
+			sendRPL(fd, "Channel name contains incorrect char");
+			throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+		}
+	}
+	return parsing_channel(arg);
+}
+
+void	check_msg_string(int fd, std::string arg){
+	if (arg.size() > 512){
+		sendRPL(fd, "Msg too long");
+		throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+	}
+	if (arg.size() < 0){
+		sendRPL(fd, "Msg too little");
+		throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+	}
+	for (size_t i = 0; i < arg.size(); i++){
+		if (arg[i] <= 32){
+			sendRPL(fd, "Msg contains incorrect char");
+			throw info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str());
+		}
+	}
+	return ;
 }

@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:23:50 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/23 16:56:28 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/06/27 12:33:29 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 #include "Global.hpp"
 #include "Client.hpp"
+
+class Client;
 
 class Channel {
 	private :
@@ -26,13 +28,12 @@ class Channel {
 		Channel(std::string _name);
 		~Channel();
 		Channel(const Channel &cpy);
-		Channel operator=(const Channel &src);
+		Channel &operator=(const Channel &src);
 		
 		const std::string	getName(void) const;
 		const std::map<int, Client>	getClients(void) const;
 
 		void	addClient(int client_fd, Client new_client);
-		void	removeClient(std::string _client_name);
 		void	removeClient(int fd);
 };
 
