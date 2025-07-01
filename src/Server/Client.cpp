@@ -13,14 +13,13 @@
 #include "Client.hpp"
 
 Client::Client()
-	: client_fd(-1), nickname(""), username(""), hostname(""), authenticated(false),
-		in_channels(){
-			
+	: client_fd(-1), nickname(""), username(""), hostname(""), authenticated(false)
+		,passwordMatch(false), in_channels(){
 }
 
 Client::Client(int _client_fd)
-	: client_fd(_client_fd), nickname(""), username(""), hostname(""), authenticated(false),
-		in_channels(){
+	: client_fd(_client_fd), nickname(""), username(""), hostname(""), authenticated(false)
+		,passwordMatch(false), in_channels(){
 }
 
 Client::~Client(){
@@ -65,6 +64,16 @@ bool				Client::getAuthenticated(void) const{
 
 std::map<std::string, std::pair<Channel, size_t> >	&Client::getChannels(void){
 	return in_channels;
+}
+
+bool Client::getPasswordMatch(void) const
+{
+	return (passwordMatch);
+}
+
+void Client::setPasswordMatch(bool match)
+{
+	passwordMatch = match;
 }
 
 const std::string &Client::getCurrentChannel(void) const{

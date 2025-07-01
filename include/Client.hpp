@@ -25,6 +25,7 @@ class Client{
 		std::string username;
 		std::string hostname;
 		bool authenticated;
+		bool passwordMatch;
 		std::map<std::string, std::pair<Channel, size_t> > in_channels;
 		std::string	current_channel;
 	public :
@@ -38,6 +39,7 @@ class Client{
 		const std::string	getNickname(void) const;
 		const std::string	getUsername(void) const;
 		const std::string	getHostname(void) const;
+		bool	getPasswordMatch(void) const;
 		bool				getAuthenticated(void) const;
 		std::map<std::string, std::pair<Channel, size_t> >	&getChannels(void);
 		const std::string	&getCurrentChannel(void) const;
@@ -49,6 +51,7 @@ class Client{
 		void setAuthenticated(bool _authenticated);
 		void setCurrentChannel(std::string _current_channel);
 		
+		void setPasswordMatch(bool match);
 		void addChannel(Channel &_new_channel);
 		void removeChannel(std::string _channel_name);
 

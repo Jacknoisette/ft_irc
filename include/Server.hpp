@@ -34,7 +34,7 @@ class Server{
 		~Server(void);
 		Server(const Server &cpy);
 		Server &operator=(const Server &src);
-		void	configure(void);
+		void	commandConfig(void);
 
 		void	parsing(char **argv);
 		void	server_creation(void);
@@ -67,7 +67,7 @@ class Server{
 		//CLIENT COMMAND
 		void	client_command(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);
 		void	check_BaseCmd(int fd, const std::vector<std::vector<std::string> > &cmd_group);
-		void	check_Auth(int fd, const std::vector<std::vector<std::string> > &cmd_group);
+		void	checkAuth(int fd, const std::vector<std::vector<std::string> > &cmd_group);
 
 		//COMMAND LIST
 		void	join(int fd, std::vector<std::string> arg);

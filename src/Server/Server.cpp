@@ -46,7 +46,7 @@ Server &Server::operator=(const Server &src){
 	return *this;
 }
 
-void Server::configure(void){
+void Server::commandConfig(void){
 	cmd_func_list["JOIN"] = &Server::join;
 	cmd_func_list["PART"] = &Server::part;
 	cmd_func_list["QUIT"] = &Server::quit;

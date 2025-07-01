@@ -17,7 +17,9 @@ std::string Server::make_client_nonblock(int client_fd, sockaddr_in &client_addr
 	char client_ip[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
 	
-	if (DEBUG){
+	if (DEBUG)
+	{
+		std::cerr << "make_client_nonblock called\n\n";
 		std::cout << "New connexion from " << client_ip 
 			<< ":" << ntohs(client_addr.sin_port) 
 			<< " (fd=" << client_fd << ")" << std::endl;
@@ -37,7 +39,10 @@ std::string Server::make_client_nonblock(int client_fd, sockaddr_in &client_addr
 	return std::string(client_ip);
 }
 
-void Server::add_new_client(){
+void Server::add_new_client()
+{
+	if (DEBUG)
+		std::cerr << "add_new_client called\n";
 	struct sockaddr_in client_addr;
 	socklen_t client_addr_len = sizeof(client_addr);
 
@@ -67,7 +72,10 @@ void Server::add_new_client(){
 		+ std::string(" from ") + std::string(client_ip) + std::string(":") + to_string(ntohs(client_addr.sin_port))) << std::endl;
 }
 
-std::string Server::analyse_line(int client_fd, std::vector<pollfd>::iterator &it){
+std::string Server::analyse_line(int client_fd, std::vector<pollfd>::iterator &it)
+{
+	if (DEBUG)
+		std::cerr << "analyse_line called\n";
 	char line[BUFFER] = {0};
 	int read_size;
 	read_size = recv(client_fd, line, BUFFER - 1, 0);
@@ -88,9 +96,10 @@ std::string Server::analyse_line(int client_fd, std::vector<pollfd>::iterator &i
 	return std_line;
 }
 
-void Server::detect_client_input(){
+void Server::detect_client_input()
+{
 	for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); it++)
-	{			
+	{
 		if (it->revents & (POLLERR | POLLHUP | POLLNVAL)) {
 			std::cout << "Error event detected on client " << it->fd << std::endl;
 			garbage.push_back(it->fd);
@@ -116,8 +125,7 @@ void Server::detect_client_input(){
 				cmd_group.push_back(cmd_parsing(group[j]));
 			}
 			command_debug(client_fd, cmd_group);
-			
-            client_command(client_fd, cmd_group);
+      client_command(client_fd, cmd_group);
 			it->revents = 0;
 		}
 	}
@@ -144,6 +152,8 @@ void	Server::take_out_the_trash(){
 
 void	Server::server_iteration()
 {
+	if (DEBUG)
+		std::cerr << "server_iteration called\n";
 	struct sigaction sa;
 	sa.sa_flags = 0;
 	sa.sa_handler = signalHandler;
