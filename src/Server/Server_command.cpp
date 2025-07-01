@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Global.hpp"
 #include "Server.hpp"
 
 void	Server::join(int fd, std::vector<std::string> arg){
@@ -75,7 +76,7 @@ void	Server::part(int fd, std::vector<std::string> arg){
 		if (arg.size() >= 2)
 			channel_list = check_channel_name(fd, arg[1]);
 		if (arg.size() >= 3){
-			check_msg_string(fd, arg[2]);
+			ValidateMsgContent(fd, arg[2]);
 			msg_on_leave = arg[2];
 		}
 	}
@@ -147,7 +148,7 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 	std::string msg;
 	try{
 		channel_list = check_channel_name(fd, arg[1]);
-		check_msg_string(fd, arg[2]);
+		ValidateMsgContent(fd, arg[2]);
 		msg = arg[2];
 	}
 	catch (std::runtime_error & e){

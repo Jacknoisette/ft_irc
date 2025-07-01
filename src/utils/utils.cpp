@@ -148,26 +148,32 @@ std::vector<std::string>	check_key_string(int fd, std::string arg){
 	return parsing_channel(arg);
 }
 
-void	check_msg_string(int fd, std::string arg){
-	if (arg.size() > 510){
+void	ValidateMsgContent(int fd, std::string arg)
+{
+	if (arg.size() > 510)
+	{
 		sendRPL(fd, "Msg too long", NULL);
-		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+		throw std::runtime_error(info(std::string("Client " + to_string(fd)
+		                 + " tried to create a wrong Channel").c_str()));
 	}
-	if (arg.size() <= 1){
-		sendRPL(fd, "Channel name too little", NULL);
-		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+	if (arg.size() <= 1)
+	{
+		sendRPL(fd, "Channel name too short", NULL);
+		throw std::runtime_error(info(std::string("Client " + to_string(fd)
+		                  + " tried to create a wrong Channel").c_str()));
 	}
 	// if (arg[0] != ':'){
 	// 	sendRPL(fd, "Msg don't start by ':'", NULL);
 	// 	throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Msg").c_str()));
 	// }
-	for (size_t i = 0; i < arg.size(); i++){
-		if (arg[i] <= 31 && arg[i] != 9 ){
+		size_t pos = arg.find_first_of("\r\v\f");
+		if (pos != arg.npos)
+		{
+			std::cerr << "the char which causes the error is at pos: " << pos << " " << arg.at(pos) << std::endl;
 			sendRPL(fd, "Msg contains incorrect char", NULL);
-			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+			throw std::runtime_error(info(std::string("Client " + to_string(fd)
+			                  + " tried to create a wrong Channel").c_str()));
 		}
-	}
-	return ;
 }
 
 std::string toLowerString(const std::string& s) {

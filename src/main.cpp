@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 	if (argc != 3)
 		return (std::cout << "Error Wrong Input:\n[./ircserv <port> <password>]" << std::endl, -1);
 	try{
-		server.configure();
+		server.commandConfig();
 		server.parsing(argv);
 		server.server_creation();
 		while (1)

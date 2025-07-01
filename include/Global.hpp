@@ -103,7 +103,7 @@ void sendRPL(int fd, ...);
 
 std::vector<std::string>	check_channel_name(int fd, std::string arg);
 std::vector<std::string>	check_key_string(int fd, std::string arg);
-void	check_msg_string(int fd, std::string arg);
+void	ValidateMsgContent(int fd, std::string arg);
 
 std::string to_string(int value);
 void signalHandler(int sig);
