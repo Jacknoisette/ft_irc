@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 12:22:15 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/01 13:15:44 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,10 @@ Server &Server::operator=(const Server &src){
 
 void Server::configure(void){
 	cmd_func_list["JOIN"] = &Server::join;
-	cmd_func_list["LEAVE"] = &Server::leave;
+	cmd_func_list["PART"] = &Server::part;
 	cmd_func_list["QUIT"] = &Server::quit;
 	cmd_func_list["PING"] = &Server::ping;
+	cmd_func_list["PRIVMSG"] = &Server::privmsg;
 }
 
 const std::string Server::getPassword(void) const{
@@ -86,8 +87,10 @@ void Server::addClient(Client &_new_client){
 }
 
 void Server::removeChannel(std::string _channel_name){
-	if (channels.find(_channel_name) != channels.end())
+	if (channels.find(_channel_name) != channels.end()){
 		channels.erase(_channel_name);
+		std::cout << info(std::string("Channel " + _channel_name + ", is detroyed !").c_str())<< std::endl;
+	}
 }
 
 void Server::removeClient(int fd){
