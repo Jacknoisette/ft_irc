@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 13:47:06 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/01 12:22:46 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@
 #include <cstdarg>
 #include <cstring>
 #include <csignal>
+#include <algorithm>
+#include <limits>
 
 # define RED "\033[1;30m"
 # define PURPLE "\033[1;31m"
@@ -105,6 +107,9 @@ void	check_msg_string(int fd, std::string arg);
 
 std::string to_string(int value);
 void signalHandler(int sig);
+
+std::string toLowerString(const std::string& s);
+std::vector<std::pair<std::string, std::string> > toLowerVector(const std::vector<std::string>& v);
 
 #endif
 

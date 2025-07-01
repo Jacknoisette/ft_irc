@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 12:23:01 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/01 13:15:43 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,10 @@ class Server{
 
 		//COMMAND LIST
 		void	join(int fd, std::vector<std::string> arg);
-		void	leave(int fd, std::vector<std::string> arg);
+		void	part(int fd, std::vector<std::string> arg);
 		void	quit(int fd, std::vector<std::string> arg);
 		void	ping(int fd, std::vector<std::string> arg);
+		void	privmsg(int fd, std::vector<std::string> arg);
 
 		//DEBUG
 		void	socket_debug(void);

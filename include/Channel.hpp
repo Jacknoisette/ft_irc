@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:23:50 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 13:49:22 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/01 10:24:29 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ class Client;
 
 class Channel {
 	private :
+		std::string og_name;
 		std::string name;
 		// std::string topic;
 		std::map<int, std::pair<Client, bool> > clients_list;
@@ -30,11 +31,14 @@ class Channel {
 		Channel(const Channel &cpy);
 		Channel &operator=(const Channel &src);
 		
+		const std::string	getOGName(void) const;
 		const std::string	getName(void) const;
 		const std::map<int, std::pair<Client, bool> >	getClients(void) const;
 
-		void	addClient(int client_fd, Client new_client);
+		void	addClient(int client_fd, Client new_client, bool is_op);
 		void	removeClient(int fd);
+
+		void sendRPL_Channel(bool self_display, int fd, std::string msg);
 };
 
 #endif

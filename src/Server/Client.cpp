@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:09:16 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 12:20:20 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/01 10:52:32 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,12 @@ bool				Client::getAuthenticated(void) const{
 	return authenticated;
 }
 
-std::map<std::string, Channel>	&Client::getChannels(void){
+std::map<std::string, std::pair<Channel, size_t> >	&Client::getChannels(void){
 	return in_channels;
+}
+
+const std::string &Client::getCurrentChannel(void) const{
+	return current_channel;
 }
 
 void Client::setClientfd(int _client_fd){
@@ -87,11 +91,46 @@ void Client::setAuthenticated(bool _authenticated){
 	authenticated = _authenticated;
 }
 
+void Client::setCurrentChannel(std::string _current_channel){
+	current_channel = _current_channel;
+}
+
 void Client::addChannel(Channel &_new_channel){
-	in_channels[_new_channel.getName()] = _new_channel;
+	if (in_channels.find(_new_channel.getName()) == in_channels.end()){
+		std::pair<Channel, size_t> channel_def;
+		channel_def.first = _new_channel;
+		size_t maxVal = findMaxVal();
+		channel_def.second = maxVal + 1;
+		in_channels[_new_channel.getName()] = channel_def;
+	}
 }
 
 void	Client::removeChannel(std::string _channel_name){
 	if (in_channels.find(_channel_name) != in_channels.end())
 		in_channels.erase(_channel_name);
+}
+
+size_t	Client::findMaxVal(void){
+	size_t maxVal = 0;
+	for (std::map<std::string, std::pair<Channel, size_t> >::const_iterator it = in_channels.begin(); it != in_channels.end(); ++it) {
+		if (it->second.second > maxVal) {
+			maxVal = it->second.second;
+		}
+	}
+	return maxVal;
+}
+
+void	Client::updateCurrentChannel(void){
+	if (!getChannels().empty()) {
+		std::map<std::string, std::pair<Channel, size_t> >& channels = getChannels();
+		size_t maxVal = findMaxVal();
+		for (std::map<std::string, std::pair<Channel, size_t> >::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+			if (it->second.second == maxVal) {
+				setCurrentChannel(it->first);
+				break;
+			}
+		}
+	} else {
+		setCurrentChannel("");
+	}
 }

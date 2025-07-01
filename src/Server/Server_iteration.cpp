@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:19:42 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 12:40:00 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/01 10:27:48 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,9 +125,9 @@ void Server::detect_client_input(){
 
 void	Server::take_out_the_trash(){
 	for (size_t i = 0; i < garbage.size(); i++){
-		for (std::map<std::string, Channel>::iterator it = clients[garbage[i]].getChannels().begin();
+		for (std::map<std::string, std::pair<Channel, size_t> >::iterator it = clients[garbage[i]].getChannels().begin();
 				it != clients[garbage[i]].getChannels().end(); it++){
-			it->second.removeClient(garbage[i]);
+			it->second.first.removeClient(garbage[i]);
 		}
 		std::cout << info(std::string("A client leaved the irc server ! with fd " + to_string(garbage[i])).c_str()) << std::endl;
 		removeClient(garbage[i]);
@@ -145,6 +145,7 @@ void	Server::take_out_the_trash(){
 void	Server::server_iteration()
 {
 	struct sigaction sa;
+	sa.sa_flags = 0;
 	sa.sa_handler = signalHandler;
 	sigemptyset(&sa.sa_mask);
 	if (sigaction(SIGINT, &sa, NULL) == -1 || sigaction(SIGQUIT, &sa, NULL) == -1)
@@ -155,7 +156,7 @@ void	Server::server_iteration()
 	if (DEBUG)
 		std::cout << client_event_nbr << std::endl;
 	if (shutdownRequested)
-		throw (std::runtime_error("stopping server..."));
+		throw (std::runtime_error(std::string("\r") + confirm("stopping server...")));
 	if (client_event_nbr < 0){
 		std::cout << error("Socket creation", "Server crash") << std::endl;
 		return ;

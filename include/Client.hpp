@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/27 11:53:21 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/27 12:16:26 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/01 10:51:50 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ class Client{
 		std::string username;
 		std::string hostname;
 		bool authenticated;
-		std::map<std::string, Channel> in_channels;
+		std::map<std::string, std::pair<Channel, size_t> > in_channels;
+		std::string	current_channel;
 	public :
 		Client(void);
 		Client(int _client_fd);
@@ -38,15 +39,21 @@ class Client{
 		const std::string	getUsername(void) const;
 		const std::string	getHostname(void) const;
 		bool				getAuthenticated(void) const;
-		std::map<std::string, Channel>	&getChannels(void);
+		std::map<std::string, std::pair<Channel, size_t> >	&getChannels(void);
+		const std::string	&getCurrentChannel(void) const;
+		
 		void setClientfd(int _client_fd);
 		void setNickname(std::string _nickname);
 		void setUsername(std::string _username);
 		void setHostname(std::string _hostname);
 		void setAuthenticated(bool _authenticated);
+		void setCurrentChannel(std::string _current_channel);
 		
 		void addChannel(Channel &_new_channel);
 		void removeChannel(std::string _channel_name);
+
+		size_t	findMaxVal(void);
+		void	updateCurrentChannel(void);
 };
 
 #endif

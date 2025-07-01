@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:22:36 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/26 15:14:57 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/01 13:15:54 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ void Server::client_command(int client_fd, const std::vector<std::vector<std::st
 
 void Server::check_BaseCmd(int fd, const std::vector<std::vector<std::string> > &cmd_group){
 	for (std::vector<std::vector<std::string> >::const_iterator cmd = cmd_group.begin(); cmd != cmd_group.end(); cmd++){
+		if (cmd->empty())
+			continue ;
 		std::map<std::string, void (Server::*)(int, std::vector<std::string>)>::iterator it = cmd_func_list.find((*cmd)[0]);
         if (it != cmd_func_list.end()) {
             (this->*(it->second))(fd, *cmd);
