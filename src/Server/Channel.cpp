@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/06/30 17:53:25 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/02 18:24:14 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,15 +38,15 @@ Channel &Channel::operator=(const Channel &src){
 	return *this;
 }
 
-const std::string	Channel::getOGName(void) const{
+const std::string	&Channel::getOGName(void) const{
 	return og_name;
 }
 
-const std::string	Channel::getName(void) const{
+const std::string	&Channel::getName(void) const{
 	return name;
 }
 
-const std::map<int, std::pair<Client, bool> >	Channel::getClients(void) const{
+const std::map<int, std::pair<Client, bool> >	&Channel::getClients(void) const{
 	return clients_list;
 }
 
@@ -66,9 +66,8 @@ void	Channel::removeClient(int fd){
 		std::cout << info(std::string("A client with fd " + to_string(fd) + ", leaved the channel " + name +  "!").c_str())<< std::endl;
 }
 
-void	Channel::sendRPL_Channel(bool self_display, int fd, std::string msg) {
-	(void)self_display;
-	for (std::map<int, std::pair<Client, bool> >::iterator client = clients_list.begin(); client != clients_list.end(); client++){
+void	Channel::sendRPL_Channel(bool self_display, int fd, std::string msg) const{
+	for (std::map<int, std::pair<Client, bool> >::const_iterator client = clients_list.begin(); client != clients_list.end(); client++){
 		if (!self_display){
 			if (client->first != fd)
 				send(client->first, msg.c_str(), msg.size(), 0);
@@ -78,4 +77,30 @@ void	Channel::sendRPL_Channel(bool self_display, int fd, std::string msg) {
 	}
 	if (DEBUG)
 		std::cout << std::flush << info(std::string("A message is send in channel ") + name + std::string(" : ")) << WHITE << msg;
+}
+
+const std::string Channel::getListClientByType(void) const{
+	std::string list = ":";
+	std::string listop;
+	std::string listclient;
+	for (std::map<int, std::pair<Client, bool> >::const_iterator client = clients_list.begin(); client != clients_list.end(); client++){
+		std::string name = client->second.first.getNickname();
+		if (client->second.second == true)
+			listop += ((client != clients_list.begin()) ? " @" : "@") + name;
+		else
+			listclient += ((client != clients_list.begin()) ? " " : "") + name;
+	}
+	list += listop + listclient;
+	return list;
+}
+
+void	Channel::sendWelcomeChannelMsg(const Client &client) const{
+	sendRPL(client.getClientfd(), "irc.local", "353", client.getNickname().c_str(),
+		"=", getOGName().c_str() , getListClientByType().c_str(), NULL);
+	sendRPL(client.getClientfd(), "irc.local", "366", client.getNickname().c_str(),
+		getOGName().c_str() , ":End of /NAMES list.", NULL);
+	std::string rpl = std::string(":" + client.getNickname() + "!" +
+		client.getUsername() + "@" + client.getHostname() + " JOIN " +
+		getOGName() + "\n");
+	sendRPL_Channel(true, client.getClientfd(), rpl);
 }
