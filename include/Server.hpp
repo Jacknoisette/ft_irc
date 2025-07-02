@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/01 13:15:43 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/02 16:39:16 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class Server{
 		std::map<std::string, Channel> channels;
 		std::map<int, Client> clients;
 		std::vector<struct pollfd> pollfds;
-		std::vector<int> garbage;
+		std::vector<std::pair<int, std::string> > garbage;
 	public :
 		Server(void);
 		Server(int _port, std::string _password);
@@ -79,6 +79,13 @@ class Server{
 		//DEBUG
 		void	socket_debug(void);
 		void	command_debug(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);
+
+		//PARSING_UTILS
+		std::vector<std::string>	check_channel_name(int fd, std::string arg, std::string cmd_name);
+		std::vector<std::string>	check_client_name(int fd, std::string arg);
+		std::vector<std::string>	check_key_string(int fd, std::string arg);
+		void						ValidateMsgContent(int fd, std::string arg);
+		void 						client_name_parsing(int fd, std::string arg);
 };
 
 #endif

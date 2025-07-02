@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:09:16 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/01 10:52:32 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/02 13:47:27 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ Client &Client::operator=(const Client &src){
 		this->hostname = src.hostname;
 		this->authenticated = src.authenticated;
 		this->in_channels = src.in_channels;
+		this->passwordMatch = src.passwordMatch;
 	}
 	return *this;
 }

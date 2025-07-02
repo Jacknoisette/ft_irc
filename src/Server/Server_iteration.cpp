@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:19:42 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/01 10:27:48 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/02 11:05:38 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,10 @@ std::string Server::analyse_line(int client_fd, std::vector<pollfd>::iterator &i
 			++it;
 			throw std::runtime_error(warning("Read", std::string("reading from client ") + to_string(client_fd) + std::string(": ")));
 		}
-		garbage.push_back(client_fd);
+		std::pair<int, std::string> client_leave;
+		client_leave.first = it->fd;
+		client_leave.second = "Client Quit";
+		garbage.push_back(client_leave);
 		if (read_size == 0)
 			return "";
 		else if (read_size < 0)
@@ -102,7 +105,10 @@ void Server::detect_client_input()
 	{
 		if (it->revents & (POLLERR | POLLHUP | POLLNVAL)) {
 			std::cout << "Error event detected on client " << it->fd << std::endl;
-			garbage.push_back(it->fd);
+			std::pair<int, std::string> client_leave;
+			client_leave.first = it->fd;
+			client_leave.second = "Client Quit";
+			garbage.push_back(client_leave);
 			continue;
 		}
 		
@@ -133,27 +139,25 @@ void Server::detect_client_input()
 
 void	Server::take_out_the_trash(){
 	for (size_t i = 0; i < garbage.size(); i++){
-		for (std::map<std::string, std::pair<Channel, size_t> >::iterator it = clients[garbage[i]].getChannels().begin();
-				it != clients[garbage[i]].getChannels().end(); it++){
-			it->second.first.removeClient(garbage[i]);
+		for (std::map<std::string, std::pair<Channel, size_t> >::iterator it = clients[garbage[i].first].getChannels().begin();
+				it != clients[garbage[i].first].getChannels().end(); it++){
+			it->second.first.removeClient(garbage[i].first);
 		}
-		std::cout << info(std::string("A client leaved the irc server ! with fd " + to_string(garbage[i])).c_str()) << std::endl;
-		removeClient(garbage[i]);
+		std::cout << info(std::string("A client leaved the irc server ! with fd " + to_string(garbage[i].first)).c_str()) << std::endl;
+		removeClient(garbage[i].first);
 		for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); it++){
-			if (it->fd == garbage[i]){
+			if (it->fd == garbage[i].first){
 				it = pollfds.erase(it);
 				break ;
 			}
 		}
-		close(garbage[i]);
+		close(garbage[i].first);
 	}
 	garbage.clear();
 }
 
 void	Server::server_iteration()
 {
-	if (DEBUG)
-		std::cerr << "server_iteration called\n";
 	struct sigaction sa;
 	sa.sa_flags = 0;
 	sa.sa_handler = signalHandler;
