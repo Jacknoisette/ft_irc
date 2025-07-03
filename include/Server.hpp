@@ -26,6 +26,7 @@ class Server{
 		std::string password;
 		std::map<std::string, Channel> channels;
 		std::map<int, Client> clients;
+		std::map<std::string, Client> strClients;
 		std::vector<struct pollfd> pollfds;
 		std::vector<std::pair<int, std::string> > garbage;
 	public :
@@ -76,6 +77,7 @@ class Server{
 		void	quit(int fd, std::vector<std::string> arg);
 		void	ping(int fd, std::vector<std::string> arg);
 		void	privmsg(int fd, std::vector<std::string> arg);
+		void	mode(int fd, std::vector<std::string> arg);
 
 		//DEBUG
 		void	socket_debug(void);
