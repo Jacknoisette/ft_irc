@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:19:42 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/02 11:05:38 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 15:08:57 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,13 +125,43 @@ void Server::detect_client_input()
 				std::cout << e.what() << std::endl;
 				continue ;
 			}
-			std::vector<std::string> group = line_split(line);
+			std::vector<std::string> group;
+			try {
+				group = line_split(line);
+			} catch (std::runtime_error & e){
+				sendRPL(it->fd, "irc.local", "417", clients[it->fd].getNickname().c_str(),
+					":Input line was too long", NULL);
+				if (DEBUG)
+					std::cout << e.what() << std::endl;
+			}
 			std::vector<std::vector<std::string> > cmd_group;
 			for (size_t j = 0; j < group.size(); j++){
 				cmd_group.push_back(cmd_parsing(group[j]));
 			}
 			command_debug(client_fd, cmd_group);
-      client_command(client_fd, cmd_group);
+      		client_command(client_fd, cmd_group);
+			it->revents = 0;
+		}
+	}
+}
+
+void Server::detect_client_output()
+{
+	for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); it++)
+	{
+		if (it->revents & (POLLERR | POLLHUP | POLLNVAL)) {
+			std::cout << "Error event detected on client " << it->fd << std::endl;
+			std::pair<int, std::string> client_leave;
+			client_leave.first = it->fd;
+			client_leave.second = "Client Quit";
+			garbage.push_back(client_leave);
+			continue;
+		}
+		
+		if (it->revents & POLLOUT){
+			flushSendBuffer(it->fd);
+			if (DEBUG)
+				std::cout << warning("POLLOUT", "Someone is spamming");
 			it->revents = 0;
 		}
 	}
@@ -183,5 +213,6 @@ void	Server::server_iteration()
 		add_new_client();
 	}
 	detect_client_input();
+	detect_client_output();
 	take_out_the_trash();
 }

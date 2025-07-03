@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 17:08:49 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/02 18:32:19 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 13:59:14 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void	Server::join(int fd, std::vector<std::string> arg){
 				channels_pos->second.addClient(fd, clients[fd], false);
 				clients[fd].addChannel(channels[*lower]);
 				clients[fd].setCurrentChannel(*lower);
-				channels[*lower].sendWelcomeChannelMsg(clients[fd]);
+				sendWelcomeChannelMsg(clients[fd], *lower);
 			} else {
 				clients[fd].setCurrentChannel(*lower);
 				if (DEBUG)
@@ -74,7 +74,7 @@ void	Server::join(int fd, std::vector<std::string> arg){
 			clients[fd].addChannel(channels[*lower]);
 			clients[fd].setCurrentChannel(*lower);
 			std::cout << info(std::string("New channel " + *original + " created").c_str()) << std::endl;
-			channels[*lower].sendWelcomeChannelMsg(clients[fd]);
+			sendWelcomeChannelMsg(clients[fd], *lower);
 		}
 	}
 	if (DEBUG)
@@ -110,7 +110,7 @@ void	Server::part(int fd, std::vector<std::string> arg){
 		std::string rpl = std::string(":" + clients[fd].getNickname() + "!" +
 			clients[fd].getUsername() + "@" + clients[fd].getHostname() + " PART " +
 			actual_channel->getOGName() + " " + msg_on_leave + "\n");
-		actual_channel->sendRPL_Channel(true, fd, rpl);
+		sendRPL_Channel(true, fd, actual_channel->getName(), rpl);
 		actual_channel->removeClient(fd);
 		clients[fd].removeChannel(clients[fd].getCurrentChannel());
 		if (actual_channel->getClients().size() == 0)
@@ -130,7 +130,7 @@ void	Server::part(int fd, std::vector<std::string> arg){
 					std::string rpl = std::string(":" + clients[fd].getNickname() + "!" +
 						clients[fd].getUsername() + "@" + clients[fd].getHostname() + " PART " +
 						channels_pos->second.getOGName() + " " + msg_on_leave + "\n");
-					channels_pos->second.sendRPL_Channel(true, fd, rpl);
+					sendRPL_Channel(true, fd, channels_pos->first, rpl);
 					channels_pos->second.removeClient(fd);
 					clients[fd].removeChannel(*lower);
 					if (channels[*lower].getClients().size() == 0)
@@ -186,7 +186,7 @@ void	Server::ping(int fd, std::vector<std::string> arg){
 				"PING", ":Not enough parameters", NULL);
 		return ;
 	}
-	sendRPL(fd, "ircserv", "PONG", " :", token.c_str());
+	sendRPL(fd, "irc.local", "PONG", " :", token.c_str(), NULL);
 }
 
 void	Server::privmsg(int fd, std::vector<std::string> arg){
@@ -229,7 +229,7 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 				std::string rpl = std::string(":" + clients[fd].getNickname() + "!" +
 					clients[fd].getUsername() + "@" + clients[fd].getHostname() + " PRIVMSG " +
 					channels_pos->second.getOGName() + " " + msg + "\n");
-				channels_pos->second.sendRPL_Channel(false, fd, rpl);
+				sendRPL_Channel(false, fd, channels_pos->first, rpl);
 			}
 		}
 	}

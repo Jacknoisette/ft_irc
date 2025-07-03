@@ -6,18 +6,30 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/02 18:24:14 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 15:45:33 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 
 Channel::Channel()
-	: og_name("#channel"), name("#channel"), clients_list(){
+	: og_name("#channel"), name("#channel"), topic("")
+	, clients_list()
+	, strClientMap()
+	, isOnInvite(false)
+	, password("")
+	, channelLimit(0)
+{
 }
 
 Channel::Channel(std::string _name)
-	: og_name(_name), name(toLowerString(_name)), clients_list(){
+	: og_name(_name), name(toLowerString(_name)), topic("")
+	, clients_list()
+	, strClientMap()
+	, isOnInvite(false)
+	, password("")
+	, channelLimit(0)
+{
 }
 
 Channel::~Channel(){
@@ -33,7 +45,12 @@ Channel &Channel::operator=(const Channel &src){
 	{
 		this->og_name = src.og_name;
 		this->name = src.name;
+		this->topic = src.topic;
 		this->clients_list = src.clients_list;
+		this->strClientMap = src.strClientMap;
+		this->isOnInvite = src.isOnInvite;
+		this->password = src.password;
+		this->channelLimit = src.channelLimit;
 	}
 	return *this;
 }
@@ -48,6 +65,61 @@ const std::string	&Channel::getName(void) const{
 
 const std::map<int, std::pair<Client, bool> >	&Channel::getClients(void) const{
 	return clients_list;
+}
+
+bool Channel::getIsOnInvite(void) const
+{
+	return (isOnInvite);
+}
+
+void Channel::setIsOnInvite(bool isOnInvite)
+{
+	this->isOnInvite = isOnInvite;
+}
+
+bool Channel::getIsTopicRestricted(void) const
+{
+	return (isTopicRestricted);
+}
+
+void Channel::setIsTopicRestricted(bool isRestricted)
+{
+	isTopicRestricted = isRestricted;
+}
+
+const std::string& Channel::getTopic(void) const
+{
+	return (topic);
+}
+
+void Channel::setTopic(const std::string& topicName)
+{
+	topic = topicName;
+}
+
+const std::string& Channel::getPassword(void) const
+{
+	return (password);
+}
+
+void Channel::setPassword(const std::string& password)
+{
+	this->password = password;
+}
+
+void Channel::setChannelLimit(int channelLimit)
+{
+	this->channelLimit = channelLimit;
+}
+
+int Channel::getChannelLimit() const
+{
+	return (channelLimit);
+}
+
+std::map<std::string, std::pair<Client, bool> >& Channel::getstrClientMap(void)
+{
+	return (strClientMap);
 }
 
 void	Channel::addClient(int client_fd, Client new_client, bool is_op){
@@ -66,19 +138,6 @@ void	Channel::removeClient(int fd){
 		std::cout << info(std::string("A client with fd " + to_string(fd) + ", leaved the channel " + name +  "!").c_str())<< std::endl;
 }
 
-void	Channel::sendRPL_Channel(bool self_display, int fd, std::string msg) const{
-	for (std::map<int, std::pair<Client, bool> >::const_iterator client = clients_list.begin(); client != clients_list.end(); client++){
-		if (!self_display){
-			if (client->first != fd)
-				send(client->first, msg.c_str(), msg.size(), 0);
-		}
-		else
-			send(client->first, msg.c_str(), msg.size(), 0);
-	}
-	if (DEBUG)
-		std::cout << std::flush << info(std::string("A message is send in channel ") + name + std::string(" : ")) << WHITE << msg;
-}
-
 const std::string Channel::getListClientByType(void) const{
 	std::string list = ":";
 	std::string listop;
@@ -92,15 +151,4 @@ const std::string Channel::getListClientByType(void) const{
 	}
 	list += listop + listclient;
 	return list;
-}
-
-void	Channel::sendWelcomeChannelMsg(const Client &client) const{
-	sendRPL(client.getClientfd(), "irc.local", "353", client.getNickname().c_str(),
-		"=", getOGName().c_str() , getListClientByType().c_str(), NULL);
-	sendRPL(client.getClientfd(), "irc.local", "366", client.getNickname().c_str(),
-		getOGName().c_str() , ":End of /NAMES list.", NULL);
-	std::string rpl = std::string(":" + client.getNickname() + "!" +
-		client.getUsername() + "@" + client.getHostname() + " JOIN " +
-		getOGName() + "\n");
-	sendRPL_Channel(true, client.getClientfd(), rpl);
 }

@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/27 11:53:21 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/01 10:51:50 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 11:19:40 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class Client{
 		bool passwordMatch;
 		std::map<std::string, std::pair<Channel, size_t> > in_channels;
 		std::string	current_channel;
+		std::string sendBuffer;
 	public :
 		Client(void);
 		Client(int _client_fd);
@@ -43,6 +44,7 @@ class Client{
 		bool				getAuthenticated(void) const;
 		std::map<std::string, std::pair<Channel, size_t> >	&getChannels(void);
 		const std::string	&getCurrentChannel(void) const;
+		std::string	&getSendBuffer(void);
 		
 		void setClientfd(int _client_fd);
 		void setNickname(std::string _nickname);
@@ -50,8 +52,9 @@ class Client{
 		void setHostname(std::string _hostname);
 		void setAuthenticated(bool _authenticated);
 		void setCurrentChannel(std::string _current_channel);
-		
 		void setPasswordMatch(bool match);
+		void setSendBuffer(std::string _sendBuffer);
+		
 		void addChannel(Channel &_new_channel);
 		void removeChannel(std::string _channel_name);
 
