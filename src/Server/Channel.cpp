@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:20:59 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 16:25:22 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ const std::string	&Channel::getName(void) const{
 	return name;
 }
 
-const std::map<int, std::pair<Client, bool> >	&Channel::getClients(void) const{
+std::map<int, std::pair<Client, bool> >	&Channel::getClients(void){
 	return clients_list;
 }
 

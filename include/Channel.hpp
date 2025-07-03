@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:23:50 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:18:07 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 16:25:10 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ class Channel {
 		void							setPassword(const std::string& password);
 		void				setChannelLimit(int channelLimit);
 		int					getChannelLimit(void) const;
-		const std::map<int, std::pair<Client, bool> >	&getClients(void) const;
+		std::map<int, std::pair<Client, bool> >	&getClients(void);
 		std::map<std::string, std::pair<Client, bool> >& getstrClientMap(void);
 
 		void	addClient(int client_fd, Client new_client, bool is_op);
