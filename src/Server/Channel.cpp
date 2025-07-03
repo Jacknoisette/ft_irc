@@ -13,11 +13,23 @@
 #include "Channel.hpp"
 
 Channel::Channel()
-	: og_name("#channel"), name("#channel"), clients_list(){
+	: og_name("#channel"), name("#channel"), topic("")
+	, clients_list()
+	, strClientMap()
+	, isOnInvite(false)
+	, password("")
+	, channelLimit(0)
+{
 }
 
 Channel::Channel(std::string _name)
-	: og_name(_name), name(toLowerString(_name)), clients_list(){
+	: og_name(_name), name(toLowerString(_name)), topic("")
+	, clients_list()
+	, strClientMap()
+	, isOnInvite(false)
+	, password("")
+	, channelLimit(0)
+{
 }
 
 Channel::~Channel(){
@@ -33,7 +45,12 @@ Channel &Channel::operator=(const Channel &src){
 	{
 		this->og_name = src.og_name;
 		this->name = src.name;
+		this->topic = src.topic;
 		this->clients_list = src.clients_list;
+		this->strClientMap = src.strClientMap;
+		this->isOnInvite = src.isOnInvite;
+		this->password = src.password;
+		this->channelLimit = src.channelLimit;
 	}
 	return *this;
 }
@@ -46,8 +63,63 @@ const std::string	Channel::getName(void) const{
 	return name;
 }
 
-const std::map<int, std::pair<Client, bool> >	Channel::getClients(void) const{
+bool Channel::getIsOnInvite(void) const
+{
+	return (isOnInvite);
+}
+
+void Channel::setIsOnInvite(bool isOnInvite)
+{
+	this->isOnInvite = isOnInvite;
+}
+
+bool Channel::getIsTopicRestricted(void) const
+{
+	return (isTopicRestricted);
+}
+
+void Channel::setIsTopicRestricted(bool isRestricted)
+{
+	isTopicRestricted = isRestricted;
+}
+
+const std::string& Channel::getTopic(void) const
+{
+	return (topic);
+}
+
+void Channel::setTopic(const std::string& topicName)
+{
+	topic = topicName;
+}
+
+const std::string& Channel::getPassword(void) const
+{
+	return (password);
+}
+
+void Channel::setPassword(const std::string& password)
+{
+	this->password = password;
+}
+
+void Channel::setChannelLimit(int channelLimit)
+{
+	this->channelLimit = channelLimit;
+}
+
+int Channel::getChannelLimit() const
+{
+	return (channelLimit);
+}
+
+std::map<int, std::pair<Client, bool> >&	Channel::getClients(void){
 	return clients_list;
+}
+
+std::map<std::string, std::pair<Client, bool> >& Channel::getstrClientMap(void)
+{
+	return (strClientMap);
 }
 
 void	Channel::addClient(int client_fd, Client new_client, bool is_op){
@@ -56,10 +128,21 @@ void	Channel::addClient(int client_fd, Client new_client, bool is_op){
 		client_def.first = new_client;
 		client_def.second = is_op;
 		clients_list[client_fd] = client_def;
-	}	
+	}
+	if (strClientMap.find(new_client.getNickname()) == strClientMap.end())
+	{
+		std::pair<Client, bool> clientPair;
+		clientPair.first = new_client;
+		clientPair.second = is_op;
+		strClientMap[new_client.getNickname()] = clientPair;
+	}
 }
 
-void	Channel::removeClient(int fd){
+void	Channel::removeClient(int fd)
+{
+	std::string clientName = clients_list.find(fd)->second.first.getNickname();
+	if (strClientMap.find(clientName) != strClientMap.end())
+		strClientMap.erase(clientName);
 	if (clients_list.find(fd) != clients_list.end())
 		clients_list.erase(fd);
 	if (DEBUG)

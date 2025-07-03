@@ -73,7 +73,7 @@ void sendRPL(int fd, ...) {
 	std::string rpl = ":";
 	const char *msg;
 	while ((msg = va_arg(args, const char*)) != NULL)
-		rpl += msg + std::string(" ");
+		rpl += std::string(msg) + " ";
 	rpl += "\r\n";
 	send(fd, rpl.c_str(), rpl.size(), 0);
 	if (DEBUG)

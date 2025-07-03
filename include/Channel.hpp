@@ -22,8 +22,13 @@ class Channel {
 	private :
 		std::string og_name;
 		std::string name;
-		// std::string topic;
+		std::string topic;
 		std::map<int, std::pair<Client, bool> > clients_list;
+		std::map<std::string, std::pair<Client, bool> > strClientMap;
+		bool isOnInvite;
+		bool isTopicRestricted;
+		std::string password;
+		unsigned long channelLimit;
 	public :
 		Channel();
 		Channel(std::string _name);
@@ -33,7 +38,18 @@ class Channel {
 		
 		const std::string	getOGName(void) const;
 		const std::string	getName(void) const;
-		const std::map<int, std::pair<Client, bool> >	getClients(void) const;
+		bool				getIsOnInvite(void) const;
+		void				setIsOnInvite(bool isOnInvite);
+		const std::string& getTopic(void) const;
+		void setTopic(const std::string& topicName);
+		bool 				getIsTopicRestricted(void) const;
+		void				setIsTopicRestricted(bool isRestricted);
+		const std::string& getPassword(void) const;
+		void							setPassword(const std::string& password);
+		void				setChannelLimit(int channelLimit);
+		int					getChannelLimit(void) const;
+		std::map<int, std::pair<Client, bool> >&	getClients(void);
+		std::map<std::string, std::pair<Client, bool> >& getstrClientMap(void);
 
 		void	addClient(int client_fd, Client new_client, bool is_op);
 		void	removeClient(int fd);

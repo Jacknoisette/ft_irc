@@ -16,11 +16,11 @@ std::map<std::string, void (Server::*)(int, std::vector<std::string>)> Server::c
 volatile sig_atomic_t Server::shutdownRequested = false;
 
 Server::Server()
-	: port(6667), password(""), channels(), clients(), pollfds(), garbage(){
+	: port(6667), password(""), channels(), clients(), strClients(), pollfds(), garbage(){
 }
 
 Server::Server(int _port, std::string _password)
-	: port(_port), password(_password), channels(), clients(), pollfds(), garbage(){
+	: port(_port), password(_password), channels(), clients(), strClients(), pollfds(), garbage(){
 }
 
 Server::~Server(){
@@ -41,6 +41,7 @@ Server &Server::operator=(const Server &src){
 		this->password = src.password;
 		this->channels = src.channels;
 		this->clients = src.clients;
+		this->strClients = src.strClients;
 		this->garbage = src.garbage;
 	}
 	return *this;
@@ -52,6 +53,7 @@ void Server::commandConfig(void){
 	cmd_func_list["QUIT"] = &Server::quit;
 	cmd_func_list["PING"] = &Server::ping;
 	cmd_func_list["PRIVMSG"] = &Server::privmsg;
+	cmd_func_list["MODE"] = &Server::mode;
 }
 
 const std::string Server::getPassword(void) const{
@@ -84,6 +86,7 @@ void Server::addChannel(Channel &_new_channel){
 
 void Server::addClient(Client &_new_client){
 	clients[_new_client.getClientfd()] = _new_client;
+	strClients[_new_client.getNickname()] = _new_client;
 }
 
 void Server::removeChannel(std::string _channel_name){
