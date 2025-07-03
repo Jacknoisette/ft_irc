@@ -54,7 +54,10 @@ void Server::commandConfig(void){
 	cmd_func_list["PING"] = &Server::ping;
 	cmd_func_list["PRIVMSG"] = &Server::privmsg;
 	cmd_func_list["MODE"] = &Server::mode;
+<<<<<<< HEAD
 	// cmd_func_list["TOPIC"] = &Server::topic;
+=======
+>>>>>>> 8b66e9b (mode func test in progress but not done)
 }
 
 const std::string Server::getPassword(void) const{
