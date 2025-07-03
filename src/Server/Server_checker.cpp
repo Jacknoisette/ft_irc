@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:22:36 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/02 16:54:34 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 15:31:49 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,8 @@ void Server::checkAuth(int fd, const std::vector<std::vector<std::string> >& cmd
 		return ;
 	for (std::vector<std::vector<std::string> >::const_iterator cmdIt = cmdGroupIt.begin(); cmdIt != cmdGroupIt.end(); cmdIt++)
 	{
+		if (password == "")
+			clients[fd].setPasswordMatch(true);
 		if ((*cmdIt)[0] == "PASS" && cmdIt->size() >= 2 && (*cmdIt)[1] == password)
 			clients[fd].setPasswordMatch(true);
 		else if ((*cmdIt)[0] == "NICK" && cmdIt->size() >= 2 && clients[fd].getPasswordMatch())

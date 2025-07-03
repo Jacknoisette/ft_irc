@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:09:16 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/02 13:47:27 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 12:56:31 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,12 @@
 
 Client::Client()
 	: client_fd(-1), nickname(""), username(""), hostname(""), authenticated(false)
-		,passwordMatch(false), in_channels(){
+		,passwordMatch(false), in_channels(), sendBuffer(){
 }
 
 Client::Client(int _client_fd)
 	: client_fd(_client_fd), nickname(""), username(""), hostname(""), authenticated(false)
-		,passwordMatch(false), in_channels(){
+		,passwordMatch(false), in_channels(), sendBuffer(){
 }
 
 Client::~Client(){
@@ -37,8 +37,9 @@ Client &Client::operator=(const Client &src){
 		this->username = src.username;
 		this->hostname = src.hostname;
 		this->authenticated = src.authenticated;
-		this->in_channels = src.in_channels;
 		this->passwordMatch = src.passwordMatch;
+		this->in_channels = src.in_channels;
+		this->sendBuffer = src.sendBuffer;
 	}
 	return *this;
 }
@@ -81,6 +82,10 @@ const std::string &Client::getCurrentChannel(void) const{
 	return current_channel;
 }
 
+std::string &Client::getSendBuffer(void){
+	return sendBuffer;
+}
+
 void Client::setClientfd(int _client_fd){
 	client_fd = _client_fd;
 }
@@ -103,6 +108,10 @@ void Client::setAuthenticated(bool _authenticated){
 
 void Client::setCurrentChannel(std::string _current_channel){
 	current_channel = _current_channel;
+}
+
+void Client::setSendBuffer(std::string _sendBuffer){
+	sendBuffer = _sendBuffer;
 }
 
 void Client::addChannel(Channel &_new_channel){

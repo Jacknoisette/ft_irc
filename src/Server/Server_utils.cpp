@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 11:22:34 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/02 16:38:00 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 15:01:48 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,4 +136,100 @@ void	Server::ValidateMsgContent(int fd, std::string arg)
 			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 		}
 	}
+}
+
+void	Server::sendWelcomeChannelMsg(const Client &client, std::string channel_name){
+	sendRPL(client.getClientfd(), "irc.local", "353", client.getNickname().c_str(),
+		"=", channels.at(channel_name).getOGName().c_str() , channels.at(channel_name).getListClientByType().c_str(), NULL);
+	sendRPL(client.getClientfd(), "irc.local", "366", client.getNickname().c_str(),
+		channels.at(channel_name).getOGName().c_str() , ":End of /NAMES list.", NULL);
+	std::string rpl = std::string(":" + client.getNickname() + "!" +
+		client.getUsername() + "@" + client.getHostname() + " JOIN " +
+		channels.at(channel_name).getOGName() + "\n");
+	sendRPL_Channel(true, client.getClientfd(), channel_name, rpl);
+}
+
+void	Server::sendRPL_Channel(bool self_display, int fd, std::string channel_name, std::string msg){
+	for (std::map<int, std::pair<Client, bool> >::const_iterator client = channels.at(channel_name).getClients().begin(); client != channels.at(channel_name).getClients().end(); client++){
+		if (!self_display){
+			if (client->first != fd)
+				sendToClient(client->first, msg);
+				// send(client->first, msg.c_str(), msg.size(), 0);
+		}
+		else
+			sendToClient(client->first, msg);
+			// send(client->first, msg.c_str(), msg.size(), 0);
+	}
+	if (DEBUG)
+		std::cout << std::flush << info(std::string("A message is send in channel ") + channel_name + std::string(" : ")) << WHITE << msg;
+}
+
+//Enter fd and any const char * to create the rpl msg
+void	Server::sendRPL(int fd, ...) {
+	va_list args;
+	va_start(args, fd);
+	std::string rpl = ":";
+	const char *msg;
+	while ((msg = va_arg(args, const char*)) != NULL)
+		rpl += msg + std::string(" ");
+	rpl += "\r\n";
+	// send(fd, rpl.c_str(), rpl.size(), 0);
+	sendToClient(fd, rpl);
+	if (DEBUG)
+		std::cout << std::flush << WHITE << rpl;
+	va_end(args);
+}
+
+void Server::sendToClient(int fd, const std::string& msg){
+	Client& client = clients[fd];
+	if (client.getSendBuffer().empty()) {
+		ssize_t sent = send(fd, msg.c_str(), msg.size(), 0);
+		if (sent < 0) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				client.getSendBuffer() += msg;
+				enablePOLLOUT(fd);
+			}
+			else {
+
+			}
+		}
+		else if ((size_t)sent < msg.size()) {
+			client.getSendBuffer() += msg.substr(sent);
+			enablePOLLOUT(fd);
+		}
+	}
+	else {
+		client.getSendBuffer() += msg;
+		enablePOLLOUT(fd);
+	}
+}
+
+void Server::flushSendBuffer(int fd){
+	Client& client = clients[fd];
+	std::string &buf = client.getSendBuffer();
+	if (buf.empty())
+		return ;
+	ssize_t sent = send(fd, buf.c_str(), buf.size(), 0);
+	if (sent < 0) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			
+		} else {
+
+		}
+	} else {
+		buf = buf.substr(sent);
+		if (buf.empty())
+			disablePOLLOUT(fd);
+	}
+}
+
+void Server::enablePOLLOUT(int fd){
+	if (!clients[fd].getSendBuffer().empty())
+		pollfds[fd].events |= POLLOUT;
+	else
+		pollfds[fd].events &= ~POLLOUT;
+}
+
+void Server::disablePOLLOUT(int fd){
+	pollfds[fd].events &= ~POLLOUT;
 }

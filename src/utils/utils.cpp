@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 12:44:40 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/02 16:31:03 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 15:05:58 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,10 @@ std::vector<std::string> line_split(std::string string){
 	}
 	if (tmp < str.size())
 		group.push_back(str.substr(tmp));
+	for (size_t i = 0; i < group.size(); i++){
+		if (group[i].size() > 510)
+			throw std::runtime_error("Line to long");
+	}
 	return (group);
 }
 
@@ -80,21 +84,6 @@ std::vector<std::string> cmd_parsing(std::string string){
 	return cmd;
 }
 
-//Enter fd and any const char * to create the rpl msg
-void sendRPL(int fd, ...) {
-	va_list args;
-	va_start(args, fd);
-	std::string rpl = ":";
-	const char *msg;
-	while ((msg = va_arg(args, const char*)) != NULL)
-		rpl += msg + std::string(" ");
-	rpl += "\r\n";
-	send(fd, rpl.c_str(), rpl.size(), 0);
-	if (DEBUG)
-		std::cout << std::flush << WHITE << rpl;
-	va_end(args);
-}
-
 std::string to_string(int value) {
 	std::stringstream ss;
 	ss << value;
@@ -114,3 +103,4 @@ std::vector< std::pair<std::string, std::string> > toLowerVector(const std::vect
 		out.push_back(std::make_pair(toLowerString(*it), *it));
 	return out;
 }
+

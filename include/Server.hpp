@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/02 16:39:16 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 12:52:55 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class Server{
 		void	add_new_client(void);
 		std::string analyse_line(int client_fd, std::vector<pollfd>::iterator &it);
 		void	detect_client_input(void);
+		void	detect_client_output(void);
 		void	take_out_the_trash();
 		// void enter_command(void);
 		// void channel_update(void);
@@ -86,6 +87,16 @@ class Server{
 		std::vector<std::string>	check_key_string(int fd, std::string arg);
 		void						ValidateMsgContent(int fd, std::string arg);
 		void 						client_name_parsing(int fd, std::string arg);
+
+		//RPL
+
+		void	sendWelcomeChannelMsg(const Client &client, std::string channel_name);
+		void	sendRPL_Channel(bool self_display, int fd, std::string channel_name, std::string msg);
+		void	sendRPL(int fd, ...);
+		void 	sendToClient(int fd, const std::string& msg);
+		void	flushSendBuffer(int fd);
+		void	enablePOLLOUT(int fd);
+		void	disablePOLLOUT(int fd);
 };
 
 #endif
