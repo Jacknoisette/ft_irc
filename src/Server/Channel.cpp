@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 15:45:33 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 16:20:59 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,10 +128,21 @@ void	Channel::addClient(int client_fd, Client new_client, bool is_op){
 		client_def.first = new_client;
 		client_def.second = is_op;
 		clients_list[client_fd] = client_def;
-	}	
+	}
+	if (strClientMap.find(new_client.getNickname()) == strClientMap.end())
+	{
+		std::pair<Client, bool> clientPair;
+		clientPair.first = new_client;
+		clientPair.second = is_op;
+		strClientMap[new_client.getNickname()] = clientPair;
+	}
 }
 
-void	Channel::removeClient(int fd){
+void	Channel::removeClient(int fd)
+{
+	std::string clientName = clients_list.find(fd)->second.first.getNickname();
+	if (strClientMap.find(clientName) != strClientMap.end())
+		strClientMap.erase(clientName);
 	if (clients_list.find(fd) != clients_list.end())
 		clients_list.erase(fd);
 	if (DEBUG)
