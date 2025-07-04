@@ -6,12 +6,13 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:22:36 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 15:31:49 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:34:20 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Global.hpp"
 #include "Server.hpp"
+#include <cctype>
 
 void Server::client_command(int client_fd, const std::vector<std::vector<std::string> > &cmdGroup)
 {
@@ -49,102 +50,83 @@ void Server::check_BaseCmd(int fd, const std::vector<std::vector<std::string> > 
 	}
 }
 
+bool Server::isValidNickname(const std::string& nick)
+{
+	if (nick.empty() || nick.size() > 9)
+		return (false);
+	if (isdigit(nick[0]) || nick[0] == '-' || nick[0] == '#')
+		return (false);
+	for (size_t i = 0; i < nick.size(); i++)
+	{
+		char c = nick.at(i);
+		if (std::isalnum(c) || c == '_' || c == '-' || c == '[' ||
+			c == ']' || c == '{' || c == '}' || c == '\\' || c == '|')
+			continue;
+		else
+			return (false);
+	}
+	return (true);
+}
+
 void Server::checkAuth(int fd, const std::vector<std::vector<std::string> >& cmdGroupIt)
 {
 	if (clients[fd].getAuthenticated())
-		return ;
-	for (std::vector<std::vector<std::string> >::const_iterator cmdIt = cmdGroupIt.begin(); cmdIt != cmdGroupIt.end(); cmdIt++)
+		return;
+	for (std::vector<std::vector<std::string> >::const_iterator cmdIt = cmdGroupIt.begin(); 
+		 cmdIt != cmdGroupIt.end(); cmdIt++)
 	{
 		if (password == "")
 			clients[fd].setPasswordMatch(true);
-		if ((*cmdIt)[0] == "PASS" && cmdIt->size() >= 2 && (*cmdIt)[1] == password)
-			clients[fd].setPasswordMatch(true);
-		else if ((*cmdIt)[0] == "NICK" && cmdIt->size() >= 2 && clients[fd].getPasswordMatch())
+		if ((*cmdIt)[0] == "PASS")
 		{
-			bool nickUsed = false;
-			if (clients.find(fd) != clients.end() && clients[fd].getNickname() == (*cmdIt)[1])
-				nickUsed = true;
-			if (!nickUsed)
-				clients[fd].setNickname((*cmdIt)[1]);
+			if (cmdIt->size() < 2)
+			{
+				sendRPL(fd, "irc.local", "461", (*cmdIt)[0].c_str(), ":Not enough parameters", NULL);
+				return;
+			}
+			if (password.empty())
+				break;
+			if ((*cmdIt)[1] == password)
+				clients[fd].setPasswordMatch(true);
 			else
-				sendRPL(fd, "Nickname already used", " : ", (*cmdIt)[1].c_str(), NULL);
+			{
+				sendRPL(fd, "irc.local", "464", (*cmdIt)[1].c_str(), ":Password incorrect", NULL);
+				quit(fd, *cmdIt);
+				return;
+			}
 		}
-		else if ((*cmdIt)[0] == "USER" && (*cmdIt).size() >= 5 && clients[fd].getNickname() != "")
+		else if ((*cmdIt)[0] == "NICK")
+			nick(fd, *cmdIt);
+		else if ((*cmdIt)[0] == "USER")
 		{
+			if (cmdIt->size() < 5)
+			{
+				sendRPL(fd, "irc.local", "461", (*cmdIt)[0].c_str(), ":Not enough parameters", NULL);
+				return;
+			}
+			if (!clients[fd].getPasswordMatch() && !password.empty())
+		  {
+				sendRPL(fd, "irc.local", "464", "", ":Password incorrect", NULL);
+				return;
+			}
 			clients[fd].setUsername((*cmdIt)[1]);
 			clients[fd].setHostname((*cmdIt)[2]);
 		}
 		else if ((*cmdIt)[0] == "QUIT" && cmdIt->size() >= 1)
 			quit(fd, *cmdIt);
-		else if (DEBUG)
-			std::cerr << "command order not respected\n";
 	}
-	if (clients[fd].getUsername() != "")
+
+	if (!clients[fd].getUsername().empty() && !clients[fd].getNormalizedNick().empty())
 	{
-		sendRPL(fd, "irc.local", "001", clients[fd].getNickname().c_str()
-		        , std::string("Welcome to IRC " + clients[fd].getNickname()).c_str(), NULL);
-		sendRPL(fd, "irc.local", "002", clients[fd].getNickname().c_str()
-		        , "Your host is irc.local version 1.0", NULL);
-		sendRPL(fd, "irc.local", "003", clients[fd].getNickname().c_str()
-		        , "Server creation in June 2025", NULL);
-		sendRPL(fd, "irc.local", "004", clients[fd].getNickname().c_str()
-		        , "irc.local", "1.0", "operator autorised", "Channel may contain invite mod or password", NULL);
+		sendRPL(fd, "irc.local", "001", clients[fd].getNickname().c_str(),
+				std::string("Welcome to the Internet Relay Network " + clients[fd].getNickname()).c_str(), NULL);
+		sendRPL(fd, "irc.local", "002", clients[fd].getNickname().c_str(),
+				"Your host is irc.local, running version 1.0", NULL);
+		sendRPL(fd, "irc.local", "003", clients[fd].getNickname().c_str(),
+				"This server was created Mon Jun 1 2025", NULL);
+		sendRPL(fd, "irc.local", "004", clients[fd].getNickname().c_str(),
+				"irc.local 1.0 o o", NULL);
 		clients[fd].setAuthenticated(true);
 	}
 }
 
-// void Server::check_Auth(int fd, const std::vector<std::vector<std::string> > &cmd_group)
-// {
-// 	if (!clients[fd].getAuthenticated())
-// 	{
-// 		for (std::vector<std::vector<std::string> >::const_iterator cmd = cmd_group.begin(); cmd != cmd_group.end(); cmd++)
-// 		{
-// 			if ((*cmd)[0] == "NICK" && (*cmd).size() >= 2)
-// 			{
-// 				bool nickUsed = false;
-// 				for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
-// 				{
-// 					if (it->first != fd && it->second.getNickname() == (*cmd)[1])
-// 					{
-// 						nickUsed = true;
-// 						break;
-// 					}
-// 				}
-// 				if (!nickUsed)
-// 				{
-// 					clients[fd].setNickname((*cmd)[1]);
-// 					if (DEBUG)
-// 						std::cerr << "Nickname set to:" << (*cmd)[1] << std::endl;
-// 				}
-// 				else
-// 					sendRPL(fd, "Nickname already used", " : ",(*cmd)[1].c_str(), NULL);
-// 			}
-// 			if ((*cmd)[0] == "USER" && (*cmd).size() >= 5)
-// 			{
-// 				if (DEBUG)
-// 					std::cerr << "cmd is: " << (*cmd)[1] << ", args are: " << (*cmd)[2] << std::endl;
-// 				clients[fd].setUsername((*cmd)[1]);
-// 				clients[fd].setHostname((*cmd)[2]);
-// 			}
-// 			if ((*cmd)[0] == "QUIT" && (*cmd).size() >= 1)
-// 				quit(fd, (*cmd));
-// 		}
-// 		if (clients[fd].getNickname() != "" && clients[fd].getUsername() != ""
-// 		     && clients[fd].getHostname() != "")
-// 		{
-// 			if (DEBUG)
-// 				std::cout << "Sending welcome messages to client " << fd << std::endl;
-// 			sendRPL(fd, "irc.local", "001", clients[fd].getNickname().c_str(), std::string("Welcome to IRC " + clients[fd].getNickname()).c_str(), NULL);
-// 			sendRPL(fd, "irc.local", "002", clients[fd].getNickname().c_str(), "Your host is irc.local version 1.0", NULL);
-// 			sendRPL(fd, "irc.local", "003", clients[fd].getNickname().c_str(), "Server creation in June 2025", NULL);
-// 			sendRPL(fd, "irc.local", "004", clients[fd].getNickname().c_str(), "irc.local", "1.0", "operator autorised", "Channel may contain invite mod or password", NULL);
-// 			clients[fd].setAuthenticated(true);
-// 			if (DEBUG)
-// 			{
-//       	std::cout << "nickname : " << clients[fd].getNickname() << std::endl;
-// 				std::cout << "username : " << clients[fd].getUsername() << std::endl;
-// 				std::cout << "hostname : " << clients[fd].getHostname() << std::endl;  
-//   		}
-// 		}
-// 	}
-// }
