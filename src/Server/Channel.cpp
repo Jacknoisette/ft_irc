@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 13:18:03 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:04:19 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ const std::string	&Channel::getName(void) const{
 	return name;
 }
 
-std::map<int, std::pair<Client, bool> >	&Channel::getClients(void){
+std::map<int, std::pair<Client*, bool> >	&Channel::getClients(void){
 	return clients_list;
 }
 
@@ -120,30 +120,30 @@ size_t Channel::getChannelLimit() const
 	return (channelLimit);
 }
 
-std::map<std::string, std::pair<Client, bool> >& Channel::getstrClientMap(void)
+std::map<std::string, std::pair<Client*, bool> >& Channel::getstrClientMap(void)
 {
 	return (strClientMap);
 }
 
-void	Channel::addClient(int client_fd, Client new_client, bool is_op){
+void	Channel::addClient(int client_fd, Client *new_client, bool is_op){
 	if (clients_list.find(client_fd) == clients_list.end()){
-		std::pair<Client, bool> client_def;
+		std::pair<Client*, bool> client_def;
 		client_def.first = new_client;
 		client_def.second = is_op;
 		clients_list[client_fd] = client_def;
 	}
-	if (strClientMap.find(new_client.getNickname()) == strClientMap.end())
+	if (strClientMap.find(new_client->getNickname()) == strClientMap.end())
 	{
-		std::pair<Client, bool> clientPair;
+		std::pair<Client*, bool> clientPair;
 		clientPair.first = new_client;
 		clientPair.second = is_op;
-		strClientMap[new_client.getNickname()] = clientPair;
+		strClientMap[new_client->getNickname()] = clientPair;
 	}
 }
 
 void	Channel::removeClient(int fd)
 {
-	std::string clientName = clients_list.find(fd)->second.first.getNickname();
+	std::string clientName = clients_list.find(fd)->second.first->getNickname();
 	if (strClientMap.find(clientName) != strClientMap.end())
 		strClientMap.erase(clientName);
 	if (clients_list.find(fd) != clients_list.end())
@@ -156,8 +156,8 @@ const std::string Channel::getListClientByType(void) const{
 	std::string list = ":";
 	std::string listop;
 	std::string listclient;
-	for (std::map<int, std::pair<Client, bool> >::const_iterator client = clients_list.begin(); client != clients_list.end(); client++){
-		std::string name = client->second.first.getNickname();
+	for (std::map<int, std::pair<Client*, bool> >::const_iterator client = clients_list.begin(); client != clients_list.end(); client++){
+		std::string name = client->second.first->getNickname();
 		if (client->second.second == true)
 			listop += ((client != clients_list.begin()) ? "@" : " @") + name;
 		else

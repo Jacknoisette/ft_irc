@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 11:22:34 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 18:05:23 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:04:21 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,19 +36,19 @@ std::vector<std::string> Server::check_channel_name(int fd, std::string arg, std
 {
 	if (arg.size() > 50)
 	{
-		sendRPL(fd, "irc.local", "479", clients[fd].getNickname().c_str(),
+		sendRPL(fd, "irc.local", "479", clients[fd]->getNickname().c_str(),
 				arg.c_str(), ":Channel name is too long", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 	}
 	if (arg.size() <= 1)
 	{
-		sendRPL(fd, "irc.local", "461", clients[fd].getNickname().c_str(),
+		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
 				cmd_name.c_str(), ":Not enough parameters", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 	}
 	if (arg[0] != '#')
 	{
-		sendRPL(fd, "irc.local", "476", clients[fd].getNickname().c_str(),
+		sendRPL(fd, "irc.local", "476", clients[fd]->getNickname().c_str(),
 				arg.c_str(), ":Bad Channel Mask", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 	}
@@ -56,7 +56,7 @@ std::vector<std::string> Server::check_channel_name(int fd, std::string arg, std
 	{
 		if (arg[i] <= 32 || arg[i] == ':')
 		{
-			sendRPL(fd, "irc.local", "479", clients[fd].getNickname().c_str(),
+			sendRPL(fd, "irc.local", "479", clients[fd]->getNickname().c_str(),
 					arg.c_str(), ":Channel name is invalid", NULL);
 			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 		}
@@ -66,7 +66,7 @@ std::vector<std::string> Server::check_channel_name(int fd, std::string arg, std
 	{
 		if (channels[i][0] != '#')
 		{
-			sendRPL(fd, "irc.local", "476", clients[fd].getNickname().c_str(),
+			sendRPL(fd, "irc.local", "476", clients[fd]->getNickname().c_str(),
 					arg.c_str(), ":Bad Channel Mask", NULL);
 			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 		}
@@ -112,7 +112,7 @@ std::vector<std::string> Server::check_key_string(int fd, std::string arg)
 {
 	if (arg.size() > 23)
 	{
-		sendRPL(fd, "irc.local", "475", clients[fd].getNickname().c_str(),
+		sendRPL(fd, "irc.local", "475", clients[fd]->getNickname().c_str(),
 				arg.c_str(), ":Cannot join channel (+k)", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 	}
@@ -120,7 +120,7 @@ std::vector<std::string> Server::check_key_string(int fd, std::string arg)
 	{
 		if (arg[i] <= 32 || arg[i] == ':')
 		{
-			sendRPL(fd, "irc.local", "475", clients[fd].getNickname().c_str(),
+			sendRPL(fd, "irc.local", "475", clients[fd]->getNickname().c_str(),
 					arg.c_str(), ":Cannot join channel (+k)", NULL);
 			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 		}
@@ -132,19 +132,19 @@ void Server::ValidateMsgContent(int fd, std::string arg)
 {
 	if (arg.size() > 510)
 	{
-		sendRPL(fd, "irc.local", "417", clients[fd].getNickname().c_str(),
+		sendRPL(fd, "irc.local", "417", clients[fd]->getNickname().c_str(),
 				":Input line was too long", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 	}
 	if (arg.size() <= 1)
 	{
-		sendRPL(fd, "irc.local", "412", clients[fd].getNickname().c_str(),
+		sendRPL(fd, "irc.local", "412", clients[fd]->getNickname().c_str(),
 				":No text to send", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 	}
 	if (arg[0] != ':')
 	{
-		sendRPL(fd, "irc.local", "412", clients[fd].getNickname().c_str(),
+		sendRPL(fd, "irc.local", "412", clients[fd]->getNickname().c_str(),
 				":No text to send", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Msg").c_str()));
 	}
@@ -152,38 +152,40 @@ void Server::ValidateMsgContent(int fd, std::string arg)
 	{
 		if (arg[i] <= 31 && arg[i] != 9)
 		{
-			sendRPL(fd, "irc.local", "412", clients[fd].getNickname().c_str(),
+			sendRPL(fd, "irc.local", "412", clients[fd]->getNickname().c_str(),
 					":No text to send", NULL);
 			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 		}
 	}
 }
 
-void Server::sendWelcomeChannelMsg(const Client &client, std::string channel_name)
+void Server::sendWelcomeChannelMsg(const Client *client, std::string channel_name)
 {
-	if (!channels.at(channel_name).getTopic().empty())
+	if (!channels.at(channel_name)->getTopic().empty())
 	{
-		sendRPL(client.getClientfd(), "irc.local", "332", client.getNickname().c_str(),
-				channels.at(channel_name).getOGName().c_str(), std::string(":" + channels.at(channel_name).getTopic()).c_str(), NULL);
-	}else{
-		sendRPL(client.getClientfd(), "irc.local", "331", client.getNickname().c_str(),
-				channels.at(channel_name).getOGName().c_str(), ":No topic is set", NULL);
+		sendRPL(client->getClientfd(), "irc.local", "332", client->getNickname().c_str(),
+				channels.at(channel_name)->getOGName().c_str(), std::string(":" + channels.at(channel_name)->getTopic()).c_str(), NULL);
 	}
-	sendRPL(client.getClientfd(), "irc.local", "324", client.getNickname().c_str(),
-			channels.at(channel_name).getOGName().c_str(), channels.at(channel_name).getModeListAndKey().c_str(), NULL);
-	sendRPL(client.getClientfd(), "irc.local", "353", client.getNickname().c_str(),
-			"=", channels.at(channel_name).getOGName().c_str(), channels.at(channel_name).getListClientByType().c_str(), NULL);
-	sendRPL(client.getClientfd(), "irc.local", "366", client.getNickname().c_str(),
-			channels.at(channel_name).getOGName().c_str(), ":End of /NAMES list.", NULL);
-	std::string rpl = std::string(":" + client.getNickname() + "!" +
-								  client.getUsername() + "@" + client.getHostname() + " JOIN " +
-								  channels.at(channel_name).getOGName() + "\n");
-	sendRPL_Channel(true, client.getClientfd(), channel_name, rpl);
+	else
+	{
+		sendRPL(client->getClientfd(), "irc.local", "331", client->getNickname().c_str(),
+				channels.at(channel_name)->getOGName().c_str(), ":No topic is set", NULL);
+	}
+	sendRPL(client->getClientfd(), "irc.local", "324", client->getNickname().c_str(),
+			channels.at(channel_name)->getOGName().c_str(), channels.at(channel_name)->getModeListAndKey().c_str(), NULL);
+	sendRPL(client->getClientfd(), "irc.local", "353", client->getNickname().c_str(),
+			"=", channels.at(channel_name)->getOGName().c_str(), channels.at(channel_name)->getListClientByType().c_str(), NULL);
+	sendRPL(client->getClientfd(), "irc.local", "366", client->getNickname().c_str(),
+			channels.at(channel_name)->getOGName().c_str(), ":End of /NAMES list.", NULL);
+	std::string rpl = std::string(":" + client->getNickname() + "!" +
+								  client->getUsername() + "@" + client->getHostname() + " JOIN " +
+								  channels.at(channel_name)->getOGName() + "\n");
+	sendRPL_Channel(true, client->getClientfd(), channel_name, rpl);
 }
 
 void Server::sendRPL_Channel(bool self_display, int fd, std::string channel_name, std::string msg)
 {
-	for (std::map<int, std::pair<Client, bool> >::const_iterator client = channels.at(channel_name).getClients().begin(); client != channels.at(channel_name).getClients().end(); client++)
+	for (std::map<int, std::pair<Client *, bool> >::const_iterator client = channels.at(channel_name)->getClients().begin(); client != channels.at(channel_name)->getClients().end(); client++)
 	{
 		if (!self_display)
 		{
@@ -215,35 +217,33 @@ void Server::sendRPL(int fd, ...)
 
 void Server::sendToClient(int fd, const std::string &msg)
 {
-	Client &client = clients[fd];
-	if (client.getSendBuffer().empty())
+	if (clients[fd]->getSendBuffer().empty())
 	{
 		ssize_t sent = send(fd, msg.c_str(), msg.size(), 0);
 		if (sent < 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
-				client.getSendBuffer() += msg;
+				clients[fd]->getSendBuffer() += msg;
 				enablePOLLOUT(fd);
 			}
 		}
 		else if ((size_t)sent < msg.size())
 		{
-			client.getSendBuffer() += msg.substr(sent);
+			clients[fd]->getSendBuffer() += msg.substr(sent);
 			enablePOLLOUT(fd);
 		}
 	}
 	else
 	{
-		client.getSendBuffer() += msg;
+		clients[fd]->getSendBuffer() += msg;
 		enablePOLLOUT(fd);
 	}
 }
 
 void Server::flushSendBuffer(int fd)
 {
-	Client &client = clients[fd];
-	std::string &buf = client.getSendBuffer();
+	std::string &buf = clients[fd]->getSendBuffer();
 	if (buf.empty())
 		return;
 	ssize_t sent = send(fd, buf.c_str(), buf.size(), 0);
@@ -257,7 +257,7 @@ void Server::flushSendBuffer(int fd)
 
 void Server::enablePOLLOUT(int fd)
 {
-	if (!clients[fd].getSendBuffer().empty())
+	if (!clients[fd]->getSendBuffer().empty())
 		pollfds[fd].events |= POLLOUT;
 	else
 		pollfds[fd].events &= ~POLLOUT;

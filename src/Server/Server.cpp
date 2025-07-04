@@ -6,13 +6,13 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 13:35:43 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:04:13 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-std::map<std::string, void (Server::*)(int, const std::vector<std::string>)> Server::cmd_func_list;
+std::map<std::string, void (Server::*)(int, std::vector<std::string>)> Server::cmd_func_list;
 volatile sig_atomic_t Server::shutdownRequested = false;
 
 Server::Server()
@@ -47,6 +47,38 @@ Server &Server::operator=(const Server &src){
 	return *this;
 }
 
+Channel*	Server::getOrCreateChannel(const std::string& name){
+	std::map<std::string, Channel*>::iterator it = channels.find(name);
+	if (it != channels.end()) {
+		return it->second;
+	}
+
+	allChannels.push_back(Channel(name));
+	
+	Channel* newChannel = &allChannels.back();
+			
+	channels[toLowerString(name)] = newChannel;
+			
+	return newChannel;
+}
+
+Client*	Server::getOrCreateClient(const int fd){
+	std::map<int, Client*>::iterator it = clients.find(fd);
+	if (it != clients.end()) {
+		return it->second;
+	}
+
+	allClients.push_back(Client(fd));
+	
+	Client* newClient = &allClients.back();
+	std::cout << std::flush << "list adr : " << std::showbase << std::hex << reinterpret_cast<uintptr_t>(&allClients.back()) << std::dec << std::endl;
+	
+	clients[fd] = newClient;
+	std::cout << std::flush << "new clientadr : " << std::showbase << std::hex << reinterpret_cast<uintptr_t>(clients[fd]) << std::dec << std::endl;
+	
+	return newClient;
+}
+
 void Server::commandConfig(void){
 	cmd_func_list["JOIN"] = &Server::join;
 	cmd_func_list["PART"] = &Server::part;
@@ -66,11 +98,11 @@ int Server::getPort(void) const{
 	return port;
 }
 
-const std::map<std::string, Channel> 	Server::getChannels(void) const{
+const std::map<std::string, Channel*> 	Server::getChannels(void) const{
 	return channels;
 }
 
-const std::map<int, Client>	Server::getClients(void) const{
+const std::map<int, Client*>	Server::getClients(void) const{
 	return clients;
 }
 
@@ -82,17 +114,14 @@ void Server::setPort(int _port){
 	port = _port;
 }
 
-void Server::addChannel(Channel &_new_channel){
-	channels[_new_channel.getName()] = _new_channel;
-}
-
-void Server::addClient(Client &_new_client){
-	clients[_new_client.getClientfd()] = _new_client;
-}
-
 void Server::removeChannel(std::string _channel_name){
 	if (channels.find(_channel_name) != channels.end()){
 		channels.erase(_channel_name);
+		std::cout << info(std::string("Channel " + _channel_name + ", is detroyed !").c_str())<< std::endl;
+	}
+	for (std::list<Channel>::iterator acIt = allChannels.begin(); acIt != allChannels.end(); acIt++)
+		if (acIt->getName() == _channel_name){
+			allChannels.erase(acIt);
 		std::cout << info(std::string("Channel " + _channel_name + ", is detroyed !").c_str())<< std::endl;
 	}
 }
@@ -100,6 +129,9 @@ void Server::removeChannel(std::string _channel_name){
 void Server::removeClient(int fd){
 	if (clients.find(fd) != clients.end())
 		clients.erase(fd);
+	for (std::list<Client>::iterator acIt = allClients.begin(); acIt != allClients.end(); acIt++)
+		if (acIt->getClientfd() == fd)
+			allClients.erase(acIt);
 }
 
 void Server::parsing(char **argv){

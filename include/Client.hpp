@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/27 11:53:21 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:43:59 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:04:11 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class Client{
 		std::string hostname;
 		bool authenticated;
 		bool passwordMatch;
-		std::map<std::string, std::pair<Channel, size_t> > in_channels;
+		std::map<std::string, std::pair<Channel*, size_t> > in_channels;
 		std::string	current_channel;
 		std::string sendBuffer;
 	public :
@@ -39,12 +39,12 @@ class Client{
 
 		int	getClientfd(void) const;
 		const std::string	getNickname(void) const;
-		const std::string getNormalizedNick(void) const;
+		const std::string	getNormalizedNick(void) const;
 		const std::string	getUsername(void) const;
 		const std::string	getHostname(void) const;
 		bool	getPasswordMatch(void) const;
 		bool				getAuthenticated(void) const;
-		std::map<std::string, std::pair<Channel, size_t> >	&getChannels(void);
+		std::map<std::string, std::pair<Channel*, size_t> >	&getChannels(void);
 		const std::string	&getCurrentChannel(void) const;
 		std::string	&getSendBuffer(void);
 		
@@ -58,7 +58,7 @@ class Client{
 		void setPasswordMatch(bool match);
 		void setSendBuffer(std::string _sendBuffer);
 		
-		void addChannel(Channel &_new_channel);
+		void addChannel(Channel *_new_channel);
 		void removeChannel(std::string _channel_name);
 
 		size_t	findMaxVal(void);

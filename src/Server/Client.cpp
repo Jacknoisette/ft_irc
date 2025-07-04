@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:09:16 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 13:29:09 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:04:18 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,6 @@ Client &Client::operator=(const Client &src){
 	{
 		this->client_fd = src.client_fd;
 		this->nickname = src.nickname;
-		this->normalizedNick = src.normalizedNick;
 		this->username = src.username;
 		this->hostname = src.hostname;
 		this->authenticated = src.authenticated;
@@ -70,7 +69,7 @@ bool				Client::getAuthenticated(void) const{
 	return authenticated;
 }
 
-std::map<std::string, std::pair<Channel, size_t> >	&Client::getChannels(void){
+std::map<std::string, std::pair<Channel*, size_t> >	&Client::getChannels(void){
 	return in_channels;
 }
 
@@ -125,13 +124,13 @@ void Client::setSendBuffer(std::string _sendBuffer){
 	sendBuffer = _sendBuffer;
 }
 
-void Client::addChannel(Channel &_new_channel){
-	if (in_channels.find(_new_channel.getName()) == in_channels.end()){
-		std::pair<Channel, size_t> channel_def;
+void Client::addChannel(Channel *_new_channel){
+	if (in_channels.find(_new_channel->getName()) == in_channels.end()){
+		std::pair<Channel*, size_t> channel_def;
 		channel_def.first = _new_channel;
 		size_t maxVal = findMaxVal();
 		channel_def.second = maxVal + 1;
-		in_channels[_new_channel.getName()] = channel_def;
+		in_channels[_new_channel->getName()] = channel_def;
 	}
 }
 
@@ -142,7 +141,7 @@ void	Client::removeChannel(std::string _channel_name){
 
 size_t	Client::findMaxVal(void){
 	size_t maxVal = 0;
-	for (std::map<std::string, std::pair<Channel, size_t> >::const_iterator it = in_channels.begin(); it != in_channels.end(); ++it) {
+	for (std::map<std::string, std::pair<Channel*, size_t> >::const_iterator it = in_channels.begin(); it != in_channels.end(); ++it) {
 		if (it->second.second > maxVal) {
 			maxVal = it->second.second;
 		}
@@ -152,9 +151,9 @@ size_t	Client::findMaxVal(void){
 
 void	Client::updateCurrentChannel(void){
 	if (!getChannels().empty()) {
-		std::map<std::string, std::pair<Channel, size_t> >& channels = getChannels();
+		std::map<std::string, std::pair<Channel*, size_t> >& channels = getChannels();
 		size_t maxVal = findMaxVal();
-		for (std::map<std::string, std::pair<Channel, size_t> >::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+		for (std::map<std::string, std::pair<Channel*, size_t> >::const_iterator it = channels.begin(); it != channels.end(); ++it) {
 			if (it->second.second == maxVal) {
 				setCurrentChannel(it->first);
 				break;

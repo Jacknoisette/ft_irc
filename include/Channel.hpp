@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:23:50 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 13:18:47 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:04:12 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ class Channel {
 		std::string og_name;
 		std::string name;
 		std::string topic;
-		std::map<int, std::pair<Client, bool> > clients_list;
-		std::map<std::string, std::pair<Client, bool> > strClientMap;
+		std::map<int, std::pair<Client*, bool> > clients_list;
+		std::map<std::string, std::pair<Client*, bool> > strClientMap;
 		bool isOnInvite;
 		bool isTopicRestricted;
 		std::string password;
@@ -48,10 +48,10 @@ class Channel {
 		void				setPassword(const std::string& password);
 		void				setChannelLimit(size_t channelLimit);
 		size_t				getChannelLimit(void) const;
-		std::map<int, std::pair<Client, bool> >	&getClients(void);
-		std::map<std::string, std::pair<Client, bool> > &getstrClientMap(void);
+		std::map<int, std::pair<Client*, bool> >	&getClients(void);
+		std::map<std::string, std::pair<Client*, bool> > &getstrClientMap(void);
 
-		void	addClient(int client_fd, Client new_client, bool is_op);
+		void	addClient(int client_fd, Client *new_client, bool is_op);
 		void	removeClient(int fd);
 
 		const std::string getListClientByType(void) const;

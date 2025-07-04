@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 13:35:16 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:03:21 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,16 @@
 
 class Server{
 	private :
-		static std::map<std::string, void (Server::*)(int, const std::vector<std::string>)> cmd_func_list;
+		static std::map<std::string, void (Server::*)(int, std::vector<std::string>)> cmd_func_list;
 		static volatile sig_atomic_t shutdownRequested;
 
 		int port;
 		std::string password;
-		std::map<std::string, Channel> channels;
-		std::map<int, Client> clients;
-		std::map<std::string, Client> strClients;
+		std::list<Channel> allChannels;
+		std::list<Client> allClients;
+		std::map<std::string, Channel*> channels;
+		std::map<int, Client*> clients;
+		std::map<std::string, Client*> strClients;
 		std::vector<struct pollfd> pollfds;
 		std::vector<std::pair<int, std::string> > garbage;
 	public :
@@ -39,6 +41,9 @@ class Server{
 
 		void	parsing(char **argv);
 		void	server_creation(void);
+
+		Channel*	getOrCreateChannel(const std::string& name);
+		Client*		getOrCreateClient(const int fd);
 
 		//SERVER ITERATION
 		void	server_iteration(void);
@@ -54,23 +59,23 @@ class Server{
 		//GET/SETTER/UTILS
 		const std::string			getPassword(void) const;
 		int							getPort(void) const;
-		const	std::map<std::string, Channel> 	getChannels(void) const;
-		const	std::map<int, Client>	getClients(void) const;
+		const	std::map<std::string, Channel*> 	getChannels(void) const;
+		const	std::map<int, Client*>	getClients(void) const;
 
 		void	setPassword(std::string _password);
 		void	setPort(int _port);
 		
-		void	addChannel(Channel &_new_channel);
-		void	addClient(Client &_new_client);
+		// void	addChannel(Channel &_new_channel);
+		// void	addClient(Client &_new_client);
 		void	removeChannel(std::string _channel_name);
 		void	removeClient(int fd);
 		static void signalHandler(int sig);
 		bool isValidNickname(const std::string& nick);
 
 		//CLIENT COMMAND
-		void	client_command(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);
+		void	client_command(int client_fd, std::vector<std::vector<std::string> > &cmd_group);
 		void	check_BaseCmd(int fd, const std::vector<std::vector<std::string> > &cmd_group);
-		void	checkAuth(int fd, const std::vector<std::vector<std::string> > &cmd_group);
+		void	checkAuth(int fd, std::vector<std::vector<std::string> > &cmd_group);
 
 		//COMMAND LIST
 		void	join(int fd, std::vector<std::string> arg);
@@ -79,7 +84,7 @@ class Server{
 		void	ping(int fd, std::vector<std::string> arg);
 		void	privmsg(int fd, std::vector<std::string> arg);
 		void	mode(int fd, std::vector<std::string> arg);
-		void	nick(int fd, const std::vector<std::string> arg);
+		void	nick(int fd, std::vector<std::string> arg);
 		// void	topic(int fd, std::vector<std::string> arg);
 
 		//DEBUG
@@ -96,7 +101,7 @@ class Server{
 
 		//RPL
 
-		void	sendWelcomeChannelMsg(const Client &client, std::string channel_name);
+		void	sendWelcomeChannelMsg(const Client *client, std::string channel_name);
 		void	sendRPL_Channel(bool self_display, int fd, std::string channel_name, std::string msg);
 		void	sendRPL(int fd, ...);
 		void 	sendToClient(int fd, const std::string& msg);

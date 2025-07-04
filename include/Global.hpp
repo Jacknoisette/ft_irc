@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 11:40:37 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:03:20 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@
 #include <csignal>
 #include <algorithm>
 #include <limits>
-# include <stdint.h>
+#include <stdint.h>
+#include <list>
 
 # define RED "\033[1;30m"
 # define PURPLE "\033[1;31m"
@@ -100,10 +101,8 @@ std::string confirm(M message){
 //UNIVERSAL FUNCTION
 std::vector<std::string> cmd_parsing(std::string string);
 std::vector<std::string> line_split(std::string string);
-void sendRPL(int fd, ...);
 
 std::string to_string(int value);
-void signalHandler(int sig);
 
 std::string toLowerString(const std::string& s);
 std::vector<std::pair<std::string, std::string> > toLowerVector(const std::vector<std::string>& v);

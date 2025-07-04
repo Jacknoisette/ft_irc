@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:19:42 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 11:40:04 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 18:34:25 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,9 +65,10 @@ void Server::add_new_client()
 	new_client_pollfd.events = POLLIN;
 	new_client_pollfd.revents = 0;
 	
-	Client new_client(client_fd);
+	// Client new_client(client_fd);
+	getOrCreateClient(client_fd);
 	pollfds.push_back(new_client_pollfd);
-	addClient(new_client);
+	// addClient(new_client);
 	std::cout << info(std::string("A new client join the irc server ! fd=") + to_string(client_fd)
 		+ std::string(" from ") + std::string(client_ip) + std::string(":") + to_string(ntohs(client_addr.sin_port))) << std::endl;
 }
@@ -129,7 +130,7 @@ void Server::detect_client_input()
 			try {
 				group = line_split(line);
 			} catch (std::runtime_error & e){
-				sendRPL(it->fd, "irc.local", "417", clients[it->fd].getNickname().c_str(),
+				sendRPL(it->fd, "irc.local", "417", clients[it->fd]->getNickname().c_str(),
 					":Input line was too long", NULL);
 				if (DEBUG)
 					std::cout << e.what() << std::endl;
@@ -169,17 +170,18 @@ void Server::detect_client_output()
 
 void	Server::take_out_the_trash(){
 	for (size_t i = 0; i < garbage.size(); i++){
-		for (std::map<std::string, std::pair<Channel, size_t> >::iterator it = clients[garbage[i].first].getChannels().begin();
-				it != clients[garbage[i].first].getChannels().end(); it++){
-			it->second.first.removeClient(garbage[i].first);
+		for (std::map<std::string, std::pair<Channel*, size_t> >::iterator it = clients[garbage[i].first]->getChannels().begin();
+				it != clients[garbage[i].first]->getChannels().end(); it++){
+			it->second.first->removeClient(garbage[i].first);
 		}
 		std::cout << info(std::string("A client leaved the irc server ! with fd " + to_string(garbage[i].first)).c_str()) << std::endl;
 		removeClient(garbage[i].first);
-		for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); it++){
+		for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); ){
 			if (it->fd == garbage[i].first){
 				it = pollfds.erase(it);
 				break ;
 			}
+			it++;
 		}
 		close(garbage[i].first);
 	}
