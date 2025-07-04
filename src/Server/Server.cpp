@@ -6,13 +6,13 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 13:06:30 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:35:43 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-std::map<std::string, void (Server::*)(int, std::vector<std::string>)> Server::cmd_func_list;
+std::map<std::string, void (Server::*)(int, const std::vector<std::string>)> Server::cmd_func_list;
 volatile sig_atomic_t Server::shutdownRequested = false;
 
 Server::Server()
@@ -54,10 +54,8 @@ void Server::commandConfig(void){
 	cmd_func_list["PING"] = &Server::ping;
 	cmd_func_list["PRIVMSG"] = &Server::privmsg;
 	cmd_func_list["MODE"] = &Server::mode;
-<<<<<<< HEAD
+	cmd_func_list["NICK"] = &Server::nick;
 	// cmd_func_list["TOPIC"] = &Server::topic;
-=======
->>>>>>> 8b66e9b (mode func test in progress but not done)
 }
 
 const std::string Server::getPassword(void) const{
@@ -90,7 +88,6 @@ void Server::addChannel(Channel &_new_channel){
 
 void Server::addClient(Client &_new_client){
 	clients[_new_client.getClientfd()] = _new_client;
-	strClients[_new_client.getNickname()] = _new_client;
 }
 
 void Server::removeChannel(std::string _channel_name){

@@ -6,13 +6,12 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 17:08:49 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 13:18:05 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:35:10 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Global.hpp"
 #include "Server.hpp"
-#include <cctype>
 
 void	Server::join(int fd, std::vector<std::string> arg){
 	if (arg.size() < 2){
@@ -439,3 +438,35 @@ void Server::mode(int fd, std::vector<std::string> arg)
 // 		return ;
 // 	}
 // }
+
+void Server::nick(int fd, const std::vector<std::string> arg)
+{
+			if (arg.size() < 2)
+			{
+				sendRPL(fd, "irc.local", "431", "", ":No nickname given", NULL);
+				return;
+			}
+
+			if (!clients[fd].getPasswordMatch() && !password.empty())
+			{
+				sendRPL(fd, "irc.local", "464", "", ":Password incorrect", NULL);
+				return;
+			}
+
+			if (!isValidNickname(arg[1]))
+			{
+				sendRPL(fd, "irc.local", "432", arg[1].c_str(), ":Erroneous nickname", NULL);
+				return;
+			}
+
+			if (strClients.find(toLowerString(arg[1])) != strClients.end())
+			{
+				sendRPL(fd, "irc.local", "433", arg[1].c_str(), ":Nickname is already in use", NULL);
+				return;
+			}
+
+			clients[fd].setNickname(arg[1]);
+			clients[fd].setNormalizedNick(toLowerString(arg[1]));
+			strClients[toLowerString(arg[1])] = fd;
+}
+

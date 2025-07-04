@@ -22,6 +22,7 @@ class Client{
 	private :
 		int client_fd;
 		std::string nickname;
+		std::string normalizedNick;
 		std::string username;
 		std::string hostname;
 		bool authenticated;
@@ -38,6 +39,7 @@ class Client{
 
 		int	getClientfd(void) const;
 		const std::string	getNickname(void) const;
+		const std::string getNormalizedNick(void) const;
 		const std::string	getUsername(void) const;
 		const std::string	getHostname(void) const;
 		bool	getPasswordMatch(void) const;
@@ -48,6 +50,7 @@ class Client{
 		
 		void setClientfd(int _client_fd);
 		void setNickname(std::string _nickname);
+		void setNormalizedNick(const std::string& nickname);
 		void setUsername(std::string _username);
 		void setHostname(std::string _hostname);
 		void setAuthenticated(bool _authenticated);

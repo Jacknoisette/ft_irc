@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 13:18:45 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:35:16 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 class Server{
 	private :
-		static std::map<std::string, void (Server::*)(int, std::vector<std::string>)> cmd_func_list;
+		static std::map<std::string, void (Server::*)(int, const std::vector<std::string>)> cmd_func_list;
 		static volatile sig_atomic_t shutdownRequested;
 
 		int port;
@@ -65,6 +65,7 @@ class Server{
 		void	removeChannel(std::string _channel_name);
 		void	removeClient(int fd);
 		static void signalHandler(int sig);
+		bool isValidNickname(const std::string& nick);
 
 		//CLIENT COMMAND
 		void	client_command(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);
@@ -78,6 +79,7 @@ class Server{
 		void	ping(int fd, std::vector<std::string> arg);
 		void	privmsg(int fd, std::vector<std::string> arg);
 		void	mode(int fd, std::vector<std::string> arg);
+		void	nick(int fd, const std::vector<std::string> arg);
 		// void	topic(int fd, std::vector<std::string> arg);
 
 		//DEBUG
