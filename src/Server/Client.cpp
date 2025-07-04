@@ -13,12 +13,12 @@
 #include "Client.hpp"
 
 Client::Client()
-	: client_fd(-1), nickname(""), username(""), hostname(""), authenticated(false)
+	: client_fd(-1), nickname(""), normalizedNick(""), username(""), hostname(""), authenticated(false)
 		,passwordMatch(false), in_channels(){
 }
 
 Client::Client(int _client_fd)
-	: client_fd(_client_fd), nickname(""), username(""), hostname(""), authenticated(false)
+	: client_fd(_client_fd), nickname(""), normalizedNick(""), username(""), hostname(""), authenticated(false)
 		,passwordMatch(false), in_channels(){
 }
 
@@ -34,6 +34,7 @@ Client &Client::operator=(const Client &src){
 	{
 		this->client_fd = src.client_fd;
 		this->nickname = src.nickname;
+		this->normalizedNick = src.normalizedNick;
 		this->username = src.username;
 		this->hostname = src.hostname;
 		this->authenticated = src.authenticated;
@@ -48,6 +49,11 @@ int	Client::getClientfd(void) const{
 
 const std::string	Client::getNickname(void) const{
 	return nickname;
+}
+
+const std::string Client::getNormalizedNick(void) const
+{
+	return (normalizedNick);
 }
 
 const std::string	Client::getUsername(void) const{
@@ -86,6 +92,11 @@ void Client::setClientfd(int _client_fd){
 
 void Client::setNickname(std::string _nickname){
 	nickname = _nickname;
+}
+
+void Client::setNormalizedNick(const std::string& nickname)
+{
+	normalizedNick = nickname;
 }
 
 void Client::setUsername(std::string _username){

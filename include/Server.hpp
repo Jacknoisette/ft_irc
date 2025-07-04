@@ -19,14 +19,14 @@
 
 class Server{
 	private :
-		static std::map<std::string, void (Server::*)(int, std::vector<std::string>)> cmd_func_list;
+		static std::map<std::string, void (Server::*)(int, const std::vector<std::string>&)> cmd_func_list;
 		static volatile sig_atomic_t shutdownRequested;
 
 		int port;
 		std::string password;
-		std::map<std::string, Channel> channels;
-		std::map<int, Client> clients;
-		std::map<std::string, Client> strClients;
+		std::map<std::string, Channel&> channels;
+		std::map<int, Client&> clients;
+		std::map<std::string, Client&> strClients;
 		std::vector<struct pollfd> pollfds;
 		std::vector<int> garbage;
 	public :
@@ -53,8 +53,8 @@ class Server{
 		//GET/SETTER/UTILS
 		const std::string			getPassword(void) const;
 		int							getPort(void) const;
-		const	std::map<std::string, Channel> 	getChannels(void) const;
-		const	std::map<int, Client>	getClients(void) const;
+		const	std::map<std::string, Channel&> 	getChannels(void) const;
+		const	std::map<int, Client&>	getClients(void) const;
 
 		void	setPassword(std::string _password);
 		void	setPort(int _port);
@@ -64,6 +64,7 @@ class Server{
 		void	removeChannel(std::string _channel_name);
 		void	removeClient(int fd);
 		static void signalHandler(int sig);
+		bool isValidNickname(const std::string& nick);
 
 		//CLIENT COMMAND
 		void	client_command(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);
@@ -71,12 +72,13 @@ class Server{
 		void	checkAuth(int fd, const std::vector<std::vector<std::string> > &cmd_group);
 
 		//COMMAND LIST
-		void	join(int fd, std::vector<std::string> arg);
-		void	part(int fd, std::vector<std::string> arg);
-		void	quit(int fd, std::vector<std::string> arg);
-		void	ping(int fd, std::vector<std::string> arg);
-		void	privmsg(int fd, std::vector<std::string> arg);
-		void	mode(int fd, std::vector<std::string> arg);
+		void	join(int fd, const std::vector<std::string>& arg);
+		void	part(int fd, const std::vector<std::string>& arg);
+		void	quit(int fd, const std::vector<std::string>& arg);
+		void	ping(int fd, const std::vector<std::string>& arg);
+		void	privmsg(int fd, const std::vector<std::string>& arg);
+		void	mode(int fd, const std::vector<std::string>& arg);
+		void	nick(int fd, const std::vector<std::string>& arg);
 
 		//DEBUG
 		void	socket_debug(void);

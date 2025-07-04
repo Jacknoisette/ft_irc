@@ -12,7 +12,7 @@
 
 #include "Server.hpp"
 
-std::map<std::string, void (Server::*)(int, std::vector<std::string>)> Server::cmd_func_list;
+std::map<std::string, void (Server::*)(int, const std::vector<std::string>&)> Server::cmd_func_list;
 volatile sig_atomic_t Server::shutdownRequested = false;
 
 Server::Server()
@@ -54,6 +54,7 @@ void Server::commandConfig(void){
 	cmd_func_list["PING"] = &Server::ping;
 	cmd_func_list["PRIVMSG"] = &Server::privmsg;
 	cmd_func_list["MODE"] = &Server::mode;
+	cmd_func_list["NICK"] = &Server::nick;
 }
 
 const std::string Server::getPassword(void) const{
@@ -64,11 +65,11 @@ int Server::getPort(void) const{
 	return port;
 }
 
-const std::map<std::string, Channel> 	Server::getChannels(void) const{
+const std::map<std::string, Channel&> 	Server::getChannels(void) const{
 	return channels;
 }
 
-const std::map<int, Client>	Server::getClients(void) const{
+const std::map<int, Client&>	Server::getClients(void) const{
 	return clients;
 }
 
@@ -86,7 +87,6 @@ void Server::addChannel(Channel &_new_channel){
 
 void Server::addClient(Client &_new_client){
 	clients[_new_client.getClientfd()] = _new_client;
-	strClients[_new_client.getNickname()] = _new_client;
 }
 
 void Server::removeChannel(std::string _channel_name){

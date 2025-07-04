@@ -12,9 +12,8 @@
 
 #include "Global.hpp"
 #include "Server.hpp"
-#include <cctype>
 
-void	Server::join(int fd, std::vector<std::string> arg){
+void	Server::join(int fd, const std::vector<std::string>& arg){
 	if (arg.size() < 2){
 		sendRPL(fd, "You need a channel name to join", NULL);
 		return ;
@@ -66,7 +65,7 @@ void	Server::join(int fd, std::vector<std::string> arg){
 		std::cout << info("Someone wants to join") << std::endl;
 }
 
-void	Server::part(int fd, std::vector<std::string> arg){
+void	Server::part(int fd, const std::vector<std::string>& arg){
 	if (arg.size() < 1){
 		sendRPL(fd, "Error in leave command", (const char)NULL);
 		return ;
@@ -123,14 +122,14 @@ void	Server::part(int fd, std::vector<std::string> arg){
 		std::cout << info("Someone wants to leave") << std::endl;
 }
 
-void	Server::quit(int fd, std::vector<std::string> arg){
+void	Server::quit(int fd, const std::vector<std::string>& arg){
 	(void)arg;
 	garbage.push_back(fd);
 	if (DEBUG)
 		std::cout << info("Someone wants to quit") << std::endl;
 }
 
-void	Server::ping(int fd, std::vector<std::string> arg){
+void	Server::ping(int fd, const std::vector<std::string>& arg){
 	std::string token;
     if (arg.size() > 1)
         token = arg[1];
@@ -140,7 +139,7 @@ void	Server::ping(int fd, std::vector<std::string> arg){
 	sendRPL(fd, "PONG", " :", token.c_str());
 }
 
-void	Server::privmsg(int fd, std::vector<std::string> arg){
+void	Server::privmsg(int fd, const std::vector<std::string>& arg){
 	if (arg.size() < 3){
 		sendRPL(fd, "Error in privmsg command", (const char)NULL);
 		return ;
@@ -174,7 +173,7 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 	}
 }
 
-void Server::mode(int fd, std::vector<std::string> arg)
+void Server::mode(int fd, const std::vector<std::string>& arg)
 {
   if (arg.size() < 3 || arg.at(1).at(0) != '#')
   {
@@ -325,4 +324,35 @@ void Server::mode(int fd, std::vector<std::string> arg)
               std::string(1, mode).c_str(), ":is unknown mode char to me", NULL);
       return;
 	}
+}
+
+void Server::nick(int fd, const std::vector<std::string>& arg)
+{
+			if (arg.size() < 2)
+			{
+				sendRPL(fd, "irc.local", "431", "", ":No nickname given", NULL);
+				return;
+			}
+
+			if (!clients[fd].getPasswordMatch() && !password.empty())
+			{
+				sendRPL(fd, "irc.local", "464", "", ":Password incorrect", NULL);
+				return;
+			}
+
+			if (!isValidNickname(arg[1]))
+			{
+				sendRPL(fd, "irc.local", "432", arg[1].c_str(), ":Erroneous nickname", NULL);
+				return;
+			}
+
+			if (strClients.find(toLowerString(arg[1])) != strClients.end())
+			{
+				sendRPL(fd, "irc.local", "433", arg[1].c_str(), ":Nickname is already in use", NULL);
+				return;
+			}
+
+			clients[fd].setNickname(arg[1]);
+			clients[fd].setNormalizedNick(toLowerString(arg[1]));
+			strClients[toLowerString(arg[1])] = fd;
 }
