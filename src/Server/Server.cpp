@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:25:32 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:06:30 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ void Server::commandConfig(void){
 	cmd_func_list["PING"] = &Server::ping;
 	cmd_func_list["PRIVMSG"] = &Server::privmsg;
 	cmd_func_list["MODE"] = &Server::mode;
+	// cmd_func_list["TOPIC"] = &Server::topic;
 }
 
 const std::string Server::getPassword(void) const{

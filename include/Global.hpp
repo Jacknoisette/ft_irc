@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:41:41 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 11:05:29 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 11:40:37 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@
 #include <csignal>
 #include <algorithm>
 #include <limits>
+# include <stdint.h>
 
 # define RED "\033[1;30m"
 # define PURPLE "\033[1;31m"

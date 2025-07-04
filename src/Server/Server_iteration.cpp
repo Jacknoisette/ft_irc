@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:19:42 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:25:31 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 11:40:04 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,4 +215,5 @@ void	Server::server_iteration()
 	detect_client_input();
 	detect_client_output();
 	take_out_the_trash();
+	ultimateDebug();
 }

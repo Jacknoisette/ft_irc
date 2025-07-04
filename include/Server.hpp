@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 12:52:55 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:06:20 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,10 +78,12 @@ class Server{
 		void	ping(int fd, std::vector<std::string> arg);
 		void	privmsg(int fd, std::vector<std::string> arg);
 		void	mode(int fd, std::vector<std::string> arg);
+		// void	topic(int fd, std::vector<std::string> arg);
 
 		//DEBUG
 		void	socket_debug(void);
 		void	command_debug(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);
+		void	ultimateDebug();
 
 		//PARSING_UTILS
 		std::vector<std::string>	check_channel_name(int fd, std::string arg, std::string cmd_name);

@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 17:08:49 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:32:30 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:06:15 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,8 @@ void	Server::join(int fd, std::vector<std::string> arg){
 		return ;
 	}
 
-	// TODO: Si channel plein --> 471 ERR_CHANNELISFULL <channel> :Cannot join channel (+l)
 	// TODO: Si channel +i --> 473 ERR_INVITEONLYCHAN <channel> :Cannot join channel (+i)
 	// TODO: Si banni --> 474 ERR_BANNEDFROMCHAN <channel> :Cannot join channel (+b)
-	// TODO: Si mauvais key --> 475 ERR_BADCHANNELKEY <channel> :Cannot join channel (+k)
 	
 	std::vector<std::string> channel_list;
 	std::vector<std::string> key_list;
@@ -39,7 +37,7 @@ void	Server::join(int fd, std::vector<std::string> arg){
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()) << std::endl;
 		return ;
 	}
-	(void)key_list;
+	// (void)key_list;
 	std::vector<std::pair<std::string, std::string> > channel_list_lower = toLowerVector(channel_list);
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = channel_list_lower.begin(); it != channel_list_lower.end(); it++)
 	{
@@ -52,6 +50,23 @@ void	Server::join(int fd, std::vector<std::string> arg){
 					sendRPL(fd, "irc.local", "405", clients[fd].getNickname().c_str(),
 						original->c_str(), ":You have joined too many channels", NULL);
 					continue ;
+				}
+				if (channels_pos->second.getClients().size() >= channels_pos->second.getChannelLimit() && channels_pos->second.getChannelLimit() > 0){
+					sendRPL(fd, "irc.local", "471",
+						original->c_str(), ":Cannot join channel (+l)", NULL);
+					continue ;
+				}
+				size_t key_pos = std::distance(channel_list_lower.begin(), it);
+				const std::string& channel_key = channels_pos->second.getPassword();
+				bool key_needed = !channel_key.empty();
+				std::cout << "channel key :" << channel_key << std::endl;
+				std::cout << "key needed :" << key_needed << std::endl;
+				if (key_needed) {
+					if (key_pos >= key_list.size() || channel_key != key_list[key_pos]){
+						sendRPL(fd, "irc.local", "475",
+							original->c_str(), ":Cannot join channel (+k)", NULL);
+						continue;
+					}
 				}
 				channels_pos->second.addClient(fd, clients[fd], false);
 				clients[fd].addChannel(channels[*lower]);
@@ -399,3 +414,28 @@ void Server::mode(int fd, std::vector<std::string> arg)
 			return;
 	}
 }
+
+
+// void	Server::topic(int fd, std::vector<std::string> arg){
+// 	if (arg.size() < 1){
+// 		sendRPL(fd, "irc.local", "461", clients[fd].getNickname().c_str(),
+// 				"PART", ":Not enough parameters", NULL);
+// 		return ;
+// 	}
+// 	std::vector<std::string> channel_list;
+// 	std::string msg_on_leave;
+// 	try{
+// 		if (arg.size() >= 2)
+// 			channel_list = check_channel_name(fd, arg[1], "PART");
+// 		if (arg.size() >= 3){
+// 			ValidateMsgContent(fd, arg[2]);
+// 			msg_on_leave = arg[2];
+// 		}
+// 	}
+// 	catch (std::runtime_error & e){
+// 		std::cout << e.what() << std::endl;
+// 		if (DEBUG)
+// 			std::cout << info(std::string("Client " + to_string(fd) + " tried to leave a wrong Channel").c_str()) << std::endl;
+// 		return ;
+// 	}
+// }

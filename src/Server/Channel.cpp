@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:25:22 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/03 18:15:21 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ Channel::Channel()
 	, clients_list()
 	, strClientMap()
 	, isOnInvite(false)
+	, isTopicRestricted(false)
 	, password("")
 	, channelLimit(0)
 {
@@ -27,6 +28,7 @@ Channel::Channel(std::string _name)
 	, clients_list()
 	, strClientMap()
 	, isOnInvite(false)
+	, isTopicRestricted(false)
 	, password("")
 	, channelLimit(0)
 {
@@ -49,6 +51,7 @@ Channel &Channel::operator=(const Channel &src){
 		this->clients_list = src.clients_list;
 		this->strClientMap = src.strClientMap;
 		this->isOnInvite = src.isOnInvite;
+		this->isTopicRestricted = src.isTopicRestricted;
 		this->password = src.password;
 		this->channelLimit = src.channelLimit;
 	}
@@ -107,12 +110,12 @@ void Channel::setPassword(const std::string& password)
 	this->password = password;
 }
 
-void Channel::setChannelLimit(int channelLimit)
+void Channel::setChannelLimit(size_t channelLimit)
 {
 	this->channelLimit = channelLimit;
 }
 
-int Channel::getChannelLimit() const
+size_t Channel::getChannelLimit() const
 {
 	return (channelLimit);
 }
@@ -156,10 +159,28 @@ const std::string Channel::getListClientByType(void) const{
 	for (std::map<int, std::pair<Client, bool> >::const_iterator client = clients_list.begin(); client != clients_list.end(); client++){
 		std::string name = client->second.first.getNickname();
 		if (client->second.second == true)
-			listop += ((client != clients_list.begin()) ? " @" : "@") + name;
+			listop += ((client != clients_list.begin()) ? "@" : " @") + name;
 		else
-			listclient += ((client != clients_list.begin()) ? " " : "") + name;
+			listclient += ((client != clients_list.begin()) ? "" : " ") + name;
 	}
 	list += listop + listclient;
+	return list;
+}
+
+const std::string Channel::getModeListAndKey(void) const{
+	std::string list = "+";
+	if (isOnInvite)
+		list += "i";
+	if (isTopicRestricted)
+		list += "t";
+	if (password != "")
+		list += "k";
+	if (channelLimit > 0)
+		list += "l";
+	if (list != "+" && channelLimit > 0)
+		list += " " + to_string(channelLimit);
+	if (list != "+" && password != "")
+		list += " " + password;
+	std::cout << list << std::endl;
 	return list;
 }

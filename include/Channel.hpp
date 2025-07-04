@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:23:50 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/03 16:25:10 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/04 12:30:00 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class Channel {
 		bool isOnInvite;
 		bool isTopicRestricted;
 		std::string password;
-		unsigned long channelLimit;
+		size_t	channelLimit;
 	public :
 		Channel();
 		Channel(std::string _name);
@@ -40,23 +40,22 @@ class Channel {
 		const std::string	&getName(void) const;
 		bool				getIsOnInvite(void) const;
 		void				setIsOnInvite(bool isOnInvite);
-		const std::string &getTopic(void) const;
-		void setTopic(const std::string& topicName);
+		const std::string	&getTopic(void) const;
+		void				setTopic(const std::string& topicName);
 		bool 				getIsTopicRestricted(void) const;
 		void				setIsTopicRestricted(bool isRestricted);
-		const std::string& getPassword(void) const;
-		void							setPassword(const std::string& password);
-		void				setChannelLimit(int channelLimit);
-		int					getChannelLimit(void) const;
+		const std::string	&getPassword(void) const;
+		void				setPassword(const std::string& password);
+		void				setChannelLimit(size_t channelLimit);
+		size_t				getChannelLimit(void) const;
 		std::map<int, std::pair<Client, bool> >	&getClients(void);
-		std::map<std::string, std::pair<Client, bool> >& getstrClientMap(void);
+		std::map<std::string, std::pair<Client, bool> > &getstrClientMap(void);
 
 		void	addClient(int client_fd, Client new_client, bool is_op);
 		void	removeClient(int fd);
 
-		// void sendRPL_Channel(bool self_display, int fd, std::string msg) const;
 		const std::string getListClientByType(void) const;
-		// void	sendWelcomeChannelMsg(const Client &client) const;
+		const std::string getModeListAndKey(void) const;
 };
 
 #endif
