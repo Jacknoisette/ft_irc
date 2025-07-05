@@ -25,19 +25,30 @@ void	Server::socket_debug(void){
 	}
 }
 
-void Server::command_debug(int client_fd, const std::vector<std::vector<std::string> > &cmd_group){
-    if (DEBUG){	
-		std::cout << PURPLE << "Cmd arrival from client fd " << client_fd << " :" << std::endl;
-		for (size_t group = 0; group < cmd_group.size(); group++)
-		{
-			std::cout << std::flush << "Cmd " << group << " :";
-			for (size_t cmd = 0; cmd < cmd_group[group].size(); cmd++){
-				std::cout << std::flush << cmd_group[group][cmd] << " ";
-			}	
-			std::cout << std::endl;
-		}
-		std::cout << RESET << std::endl;
-	}
+void Server::command_debug(int client_fd, const std::vector<std::vector<std::string> > &cmdGroup, const std::string& where)
+{
+	if (DEBUG)
+	{
+			std::cerr << "=== DEBUG COMMAND ===" << std::endl;
+			std::cerr << "Client: " << clients[client_fd]->getNickname() << " (fd:" << client_fd << ")" << std::endl;
+			std::cerr << "Called by: " << where << std::endl;
+			std::cerr << "Number of commands: " << cmdGroup.size() << std::endl;
+
+			for (size_t cmdIndex = 0; cmdIndex < cmdGroup.size(); cmdIndex++)
+			{
+				std::cerr << "--- Command " << cmdIndex << " ---" << std::endl;
+				if (cmdGroup[cmdIndex].empty())
+				{
+					std::cerr << "  (empty command)" << std::endl;
+					continue;
+				}
+				std::cerr << "  Command: " << cmdGroup[cmdIndex][0] << std::endl;
+				for (size_t argIndex = 1; argIndex < cmdGroup[cmdIndex].size(); argIndex++)
+					std::cerr << "  Arg " << (argIndex-1) << ": " << cmdGroup[cmdIndex][argIndex] << std::endl;
+				std::cerr << "  Total args: " << (cmdGroup[cmdIndex].size() - 1) << std::endl;
+			}
+			std::cerr << "====================" << std::endl;
+  }
 }
 
 void	Server::ultimateDebug(){

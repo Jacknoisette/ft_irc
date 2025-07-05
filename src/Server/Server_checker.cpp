@@ -15,25 +15,11 @@
 
 void Server::client_command(int client_fd, std::vector<std::vector<std::string> > &cmdGroup)
 {
-	int vecVecStrCpt = 0;
-	int vecStrCpt = 0;
-	if (DEBUG)
-	{
-		std::cerr << "client_command called\n";
-		for (std::vector<std::vector<std::string> >::const_iterator vecVecStrIt = cmdGroup.begin(); vecVecStrIt != cmdGroup.end(); vecVecStrIt++)
-		{
-			std::cerr << "command: " << vecVecStrCpt << std::endl;
-			for (std::vector<std::string>::const_iterator vecStrIt = vecVecStrIt->begin(); vecStrIt != vecVecStrIt->end(); vecStrIt++)
-			{
-				std::cerr << "arg: " << vecStrCpt << " " << *vecStrIt << std::endl;
-				vecStrCpt++;
-			}
-			vecVecStrCpt++;
-		}
-	}
+	command_debug(client_fd, cmdGroup, "client_command");
 	checkAuth(client_fd, cmdGroup);
 	if (!clients[client_fd]->getAuthenticated())
 		return ;
+	command_debug(client_fd, cmdGroup, "client_command, before check_BaseCmd");
 	check_BaseCmd(client_fd, cmdGroup);
 }
 
@@ -44,6 +30,9 @@ void Server::check_BaseCmd(int fd, const std::vector<std::vector<std::string> > 
 		std::map<std::string, void (Server::*)(int, std::vector<std::string>)>::iterator it = cmd_func_list.find((*cmd)[0]);
 		if (it != cmd_func_list.end())
 			(this->*(it->second))(fd, *cmd);
+		else
+			sendRPL(fd, "irc.local", "421", clients[fd]->getNickname().c_str()
+			        , (*cmd)[0].c_str(), ":Unknown command", NULL);
 	}
 }
 
@@ -72,8 +61,9 @@ void Server::checkAuth(int fd, std::vector<std::vector<std::string> >& cmd_group
 	for (std::vector<std::vector<std::string> >::iterator cmdIt = cmd_group.begin(); 
 		 cmdIt != cmd_group.end(); )
 	{
-		command_debug(fd, cmd_group);
-		if (password == "")
+		if (!clients[fd]->getUsername().empty() && !clients[fd]->getNormalizedNick().empty())
+			break;
+		if (password.empty())
 			clients[fd]->setPasswordMatch(true);
 		if ((*cmdIt)[0] == "PASS")
 		{
@@ -92,12 +82,9 @@ void Server::checkAuth(int fd, std::vector<std::vector<std::string> >& cmd_group
 				quit(fd, *cmdIt);
 				return;
 			}
-			++cmdIt;
 		}
-		else if ((*cmdIt)[0] == "NICK"){
+		else if ((*cmdIt)[0] == "NICK")
 			nick(fd, *cmdIt);
-			cmdIt = cmd_group.erase(cmdIt);
-		}
 		else if ((*cmdIt)[0] == "USER")
 		{
 			if (cmdIt->size() < 5)
@@ -112,16 +99,16 @@ void Server::checkAuth(int fd, std::vector<std::vector<std::string> >& cmd_group
 			}
 			clients[fd]->setUsername((*cmdIt)[1]);
 			clients[fd]->setHostname((*cmdIt)[2]);
-			++cmdIt;
 		}
 		else if ((*cmdIt)[0] == "QUIT" && cmdIt->size() >= 1){
 			quit(fd, *cmdIt);
-			++cmdIt;
 		}
 		else
-			++cmdIt;
+		{
+			sendRPL(fd, "irc.local", "451", "*", "You have not registered", NULL);
+		}
+			cmdIt = cmd_group.erase(cmdIt);
 	}
-
 	if (!clients[fd]->getUsername().empty() && !clients[fd]->getNormalizedNick().empty())
 	{
 		sendRPL(fd, "irc.local", "001", clients[fd]->getNickname().c_str(),

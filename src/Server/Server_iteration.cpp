@@ -133,11 +133,9 @@ void Server::detect_client_input()
 					std::cout << e.what() << std::endl;
 			}
 			std::vector<std::vector<std::string> > cmd_group;
-			for (size_t j = 0; j < group.size(); j++){
+			for (size_t j = 0; j < group.size(); j++)
 				cmd_group.push_back(cmd_parsing(group[j]));
-			}
-			command_debug(client_fd, cmd_group);
-      		client_command(client_fd, cmd_group);
+			client_command(client_fd, cmd_group);
 			it->revents = 0;
 		}
 	}

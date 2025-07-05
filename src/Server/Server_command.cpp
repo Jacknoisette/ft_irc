@@ -168,7 +168,7 @@ void	Server::part(int fd, std::vector<std::string> arg){
 void	Server::quit(int fd, std::vector<std::string> arg){
 	if (arg.size() < 1){
 		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
-				"QUITs", ":Not enough parameters", NULL);
+				"QUIT", ":Not enough parameters", NULL);
 		return ;
 	}
 	std::string msg;
@@ -445,7 +445,7 @@ void	Server::nick(int fd, const std::vector<std::string> arg)
 		sendRPL(fd, "irc.local", "431", "", ":No nickname given", NULL);
 		return;
 	}
-	std::cout << "arguments : " << arg[0] << arg[1] << std::endl;
+
 	if (!clients[fd]->getPasswordMatch() && !password.empty())
 	{
 		sendRPL(fd, "irc.local", "464", "", ":Password incorrect", NULL);

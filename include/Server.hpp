@@ -89,7 +89,7 @@ class Server{
 
 		//DEBUG
 		void	socket_debug(void);
-		void	command_debug(int client_fd, const std::vector<std::vector<std::string> > &cmd_group);
+		void	command_debug(int client_fd, const std::vector<std::vector<std::string> > &cmd_group, const std::string& where);
 		void	ultimateDebug();
 
 		//PARSING_UTILS

@@ -128,8 +128,11 @@ void Server::removeChannel(std::string _channel_name){
 
 void Server::removeClient(int fd)
 {
-	if (clients.find(fd) != clients.end())
+	if (clients.find(fd) != clients.end() && strClients.find(clients[fd]->getNickname()) != strClients.end())
+	{
+		strClients.erase(clients[fd]->getNickname());
 		clients.erase(fd);
+	}
 	for (std::list<Client>::iterator acIt = allClients.begin(); acIt != allClients.end();)
 	{
 		if (acIt->getClientfd() == fd)

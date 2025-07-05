@@ -24,8 +24,6 @@ Client::Client(int _client_fd)
 
 Client::~Client()
 {
-	std::cout << "=== Client destructor called for fd=" << this->getClientfd() << " ===" << std::endl;
-	std::cout << "=== Client destructor finished ===" << std::endl;
 }
 
 Client::Client(const Client &cpy){
