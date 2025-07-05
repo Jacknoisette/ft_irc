@@ -41,8 +41,6 @@ std::string Server::make_client_nonblock(int client_fd, sockaddr_in &client_addr
 
 void Server::add_new_client()
 {
-	if (DEBUG)
-		std::cerr << "add_new_client called\n";
 	struct sockaddr_in client_addr;
 	socklen_t client_addr_len = sizeof(client_addr);
 
@@ -75,13 +73,13 @@ void Server::add_new_client()
 
 std::string Server::analyse_line(int client_fd, std::vector<pollfd>::iterator &it)
 {
-	if (DEBUG)
-		std::cerr << "analyse_line called\n";
 	char line[BUFFER] = {0};
 	int read_size;
 	read_size = recv(client_fd, line, BUFFER - 1, 0);
-	if (read_size <= 0){
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+	if (read_size <= 0)
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+		{
 			++it;
 			throw std::runtime_error(warning("Read", std::string("reading from client ") + to_string(client_fd) + std::string(": ")));
 		}
@@ -94,8 +92,6 @@ std::string Server::analyse_line(int client_fd, std::vector<pollfd>::iterator &i
 		else if (read_size < 0)
 			throw std::runtime_error(warning("Read", std::string("reading from client ") + to_string(client_fd) + std::string(": ")));
 	}
-	if (DEBUG)
-		std::cout << "line :" << line << std::endl;
 	std::string std_line(line);
 	return std_line;
 }
@@ -104,12 +100,13 @@ void Server::detect_client_input()
 {
 	for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); it++)
 	{
-		if (it->revents & (POLLERR | POLLHUP | POLLNVAL)) {
-			std::cout << "Error event detected on client " << it->fd << std::endl;
+		if (it->revents & (POLLERR | POLLHUP | POLLNVAL))
+		{
 			std::pair<int, std::string> client_leave;
 			client_leave.first = it->fd;
 			client_leave.second = "Client Quit";
 			garbage.push_back(client_leave);
+			it->revents = 0;
 			continue;
 		}
 		
@@ -151,11 +148,11 @@ void Server::detect_client_output()
 	for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); it++)
 	{
 		if (it->revents & (POLLERR | POLLHUP | POLLNVAL)) {
-			std::cout << "Error event detected on client " << it->fd << std::endl;
 			std::pair<int, std::string> client_leave;
 			client_leave.first = it->fd;
 			client_leave.second = "Client Quit";
 			garbage.push_back(client_leave);
+			it->revents = 0;
 			continue;
 		}
 		
@@ -169,15 +166,16 @@ void Server::detect_client_output()
 }
 
 void	Server::take_out_the_trash(){
-	for (size_t i = 0; i < garbage.size(); i++){
+	for (size_t i = 0; i < garbage.size(); i++)
+	{
 		for (std::map<std::string, std::pair<Channel*, size_t> >::iterator it = clients[garbage[i].first]->getChannels().begin();
-				it != clients[garbage[i].first]->getChannels().end(); it++){
+				it != clients[garbage[i].first]->getChannels().end(); it++)
 			it->second.first->removeClient(garbage[i].first);
-		}
-		std::cout << info(std::string("A client leaved the irc server ! with fd " + to_string(garbage[i].first)).c_str()) << std::endl;
 		removeClient(garbage[i].first);
-		for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); ){
-			if (it->fd == garbage[i].first){
+		for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); )
+		{
+			if (it->fd == garbage[i].first)
+			{
 				it = pollfds.erase(it);
 				break ;
 			}

@@ -22,7 +22,10 @@ Client::Client(int _client_fd)
 		,passwordMatch(false), in_channels(), sendBuffer(){
 }
 
-Client::~Client(){
+Client::~Client()
+{
+	std::cout << "=== Client destructor called for fd=" << this->getClientfd() << " ===" << std::endl;
+	std::cout << "=== Client destructor finished ===" << std::endl;
 }
 
 Client::Client(const Client &cpy){

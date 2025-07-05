@@ -126,12 +126,21 @@ void Server::removeChannel(std::string _channel_name){
 	}
 }
 
-void Server::removeClient(int fd){
+void Server::removeClient(int fd)
+{
 	if (clients.find(fd) != clients.end())
 		clients.erase(fd);
-	for (std::list<Client>::iterator acIt = allClients.begin(); acIt != allClients.end(); acIt++)
+	for (std::list<Client>::iterator acIt = allClients.begin(); acIt != allClients.end();)
+	{
 		if (acIt->getClientfd() == fd)
-			allClients.erase(acIt);
+		{
+			acIt = allClients.erase(acIt);
+		}
+		else
+		{
+			++acIt;
+		}
+	}
 }
 
 void Server::parsing(char **argv){

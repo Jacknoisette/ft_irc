@@ -414,7 +414,6 @@ void Server::mode(int fd, std::vector<std::string> arg)
 	}
 }
 
-
 // void	Server::topic(int fd, std::vector<std::string> arg){
 // 	if (arg.size() < 1){
 // 		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
@@ -438,7 +437,6 @@ void Server::mode(int fd, std::vector<std::string> arg)
 // 		return ;
 // 	}
 // }
-
 
 void	Server::nick(int fd, const std::vector<std::string> arg)
 {
