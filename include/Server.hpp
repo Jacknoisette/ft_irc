@@ -86,6 +86,7 @@ class Server{
 		void	mode(int fd, std::vector<std::string> arg);
 		void	nick(int fd, std::vector<std::string> arg);
 		// void	topic(int fd, std::vector<std::string> arg);
+		void	invite(int fd, std::vector<std::string> arg);
 
 		//DEBUG
 		void	socket_debug(void);

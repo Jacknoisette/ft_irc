@@ -15,7 +15,7 @@
 Channel::Channel()
 	: og_name("#channel"), name("#channel"), topic("")
 	, clients_list()
-	, strClientMap()
+	, ClientMapOp()
 	, isOnInvite(false)
 	, isTopicRestricted(false)
 	, password("")
@@ -26,7 +26,7 @@ Channel::Channel()
 Channel::Channel(std::string _name)
 	: og_name(_name), name(toLowerString(_name)), topic("")
 	, clients_list()
-	, strClientMap()
+	, ClientMapOp()
 	, isOnInvite(false)
 	, isTopicRestricted(false)
 	, password("")
@@ -49,7 +49,7 @@ Channel &Channel::operator=(const Channel &src){
 		this->name = src.name;
 		this->topic = src.topic;
 		this->clients_list = src.clients_list;
-		this->strClientMap = src.strClientMap;
+		this->ClientMapOp = src.ClientMapOp;
 		this->isOnInvite = src.isOnInvite;
 		this->isTopicRestricted = src.isTopicRestricted;
 		this->password = src.password;
@@ -120,9 +120,14 @@ size_t Channel::getChannelLimit() const
 	return (channelLimit);
 }
 
-std::map<std::string, std::pair<Client*, bool> >& Channel::getstrClientMap(void)
+std::map<std::string, std::pair<Client*, bool> >& Channel::getClientMapOp(void)
 {
-	return (strClientMap);
+	return (ClientMapOp);
+}
+
+std::map<std::string, std::pair<Client*, bool> >& Channel::getClientMapInvite(void)
+{
+	return (ClientMapInvite);
 }
 
 void	Channel::addClient(int client_fd, Client *new_client, bool is_op){
@@ -132,20 +137,28 @@ void	Channel::addClient(int client_fd, Client *new_client, bool is_op){
 		client_def.second = is_op;
 		clients_list[client_fd] = client_def;
 	}
-	if (strClientMap.find(new_client->getNickname()) == strClientMap.end())
+	if (ClientMapOp.find(new_client->getNickname()) == ClientMapOp.end())
 	{
 		std::pair<Client*, bool> clientPair;
 		clientPair.first = new_client;
 		clientPair.second = is_op;
-		strClientMap[new_client->getNickname()] = clientPair;
+		ClientMapOp[new_client->getNickname()] = clientPair;
+	}
+	if (ClientMapInvite.find(new_client->getNickname()) == ClientMapInvite.end())
+	{
+		std::pair<Client*, bool> clientPair;
+		clientPair.first = new_client;
+		ClientMapInvite[new_client->getNickname()] = clientPair;
 	}
 }
 
 void	Channel::removeClient(int fd)
 {
 	std::string clientName = clients_list.find(fd)->second.first->getNickname();
-	if (strClientMap.find(clientName) != strClientMap.end())
-		strClientMap.erase(clientName);
+	if (ClientMapOp.find(clientName) != ClientMapOp.end())
+		ClientMapOp.erase(clientName);
+	if (ClientMapInvite.find(clientName) != ClientMapInvite.end())
+		ClientMapInvite.erase(clientName);
 	if (clients_list.find(fd) != clients_list.end())
 		clients_list.erase(fd);
 	if (DEBUG)

@@ -88,6 +88,7 @@ void Server::commandConfig(void){
 	cmd_func_list["MODE"] = &Server::mode;
 	cmd_func_list["NICK"] = &Server::nick;
 	// cmd_func_list["TOPIC"] = &Server::topic;
+	cmd_func_list["INVITE"] = &Server::join;
 }
 
 const std::string Server::getPassword(void) const{

@@ -266,7 +266,7 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 
 void Server::mode(int fd, std::vector<std::string> arg)
 {
-	if (arg.size() < 3 || arg.at(1).at(0) != '#')
+	if (arg.size() < 3)
 	{
 		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
 			"MODE", ": Not enough parameters", NULL);
@@ -300,7 +300,7 @@ void Server::mode(int fd, std::vector<std::string> arg)
 	}
 
 	std::map<std::string, std::pair<Client*, bool> >& strClientMap = 
-		currentChannel->second.first->getstrClientMap();
+		currentChannel->second.first->getClientMapOp();
 
 	std::string modeStr = arg.at(2);
 	if (modeStr.length() < 2) return;
@@ -323,15 +323,15 @@ void Server::mode(int fd, std::vector<std::string> arg)
      	 break;
 
     	case 'k':
-     		if (adding)
-     		{
+   		if (adding)
+   		{
 				if (arg.size() < 4)
 				{
 					sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
 							"MODE", ":Not enough parameters", NULL);
 					return;
 				}
-			currentChannel->second.first->setPassword(arg.at(3));
+				currentChannel->second.first->setPassword(arg.at(3));
 			}
 			else
 			{
@@ -349,12 +349,13 @@ void Server::mode(int fd, std::vector<std::string> arg)
 							arg.at(1).c_str(), ":Channel key incorrect", NULL);
 					return;
 				}
-     		}
+   		}
 			sendRPL_Channel(true, fd, toLowerString(arg.at(1)), std::string(clients[fd]->getNickname()
 				+ " MODE " + arg.at(1) + " " + arg.at(2) + " " + arg.at(3) + " \n").c_str());
     		break;
 
 		case 'o':
+		{
 			if (arg.size() < 4)
 			{
 				sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
@@ -367,16 +368,22 @@ void Server::mode(int fd, std::vector<std::string> arg)
 						arg.at(3).c_str(), ":No such nick", NULL);
 				return;
 			}
-			if (strClientMap.find(toLowerString(arg.at(3))) == strClientMap.end())
+			std::string targetNick = toLowerString(arg.at(3));
+			std::map<std::string, std::pair<Client*, bool> >::iterator nickIt = strClientMap.find(targetNick);
+			if (nickIt == strClientMap.end())
 			{
 				sendRPL(fd, "irc.local", "441", clients[fd]->getNickname().c_str(),
 						arg.at(3).c_str(), ":They aren't on that channel", NULL);
 				return;
 			}
-			strClientMap.find(toLowerString(arg.at(3)))->second.second = adding;
+			int targetFd = nickIt->second.first->getClientfd();
+			std::map<int, std::pair<Client*, bool> >::iterator fdIt = clientMap.find(targetFd);
+			if (fdIt != clientMap.end())
+				fdIt->second.second = adding;
 			sendRPL_Channel(true, fd, toLowerString(arg.at(1)), std::string(clients[fd]->getNickname()
 						+ " MODE " + arg.at(1) + " " + arg.at(2) + " " + arg.at(3) + " \n").c_str());
 			break;
+		}
 
 		case 'l':
 			if (adding)
@@ -469,3 +476,66 @@ void	Server::nick(int fd, const std::vector<std::string> arg)
 	strClients[toLowerString(arg[1])] = clients[fd];
 }
 
+void Server::invite(int fd, std::vector<std::string> arg)
+{
+	if (arg.size() < 3)
+	{
+		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
+			"INVITE", ": Not enough parameters", NULL);
+		return;
+	}
+	std::string channelName = toLowerString(arg.at(2));
+	std::string guestName = toLowerString(arg.at(1));
+
+	if (channels.find(channelName) == channels.end())
+	{
+		sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
+			channelName.c_str(), ":No such channel", NULL);
+		return;
+	}
+
+	std::map<std::string, std::pair<Channel*, size_t> >& channelMap = clients[fd]->getChannels();
+	std::map<std::string, std::pair<Channel*, size_t> >::iterator currentChannel = 
+		channelMap.find(channelName);
+
+	if (currentChannel == channelMap.end())
+	{
+		sendRPL(fd, "irc.local", "442", clients[fd]->getNickname().c_str(),
+			channelName.c_str(), ":You're not on that channel", NULL);
+		return;
+	}
+
+	if (strClients.find(guestName) == strClients.end())
+	{
+		sendRPL(fd, "irc.local", "401", clients[fd]->getNickname().c_str(),
+			arg.at(1).c_str(), ":No such nick/channel", NULL);
+		return ;
+	}
+
+	std::map<int, std::pair<Client*, bool> >& clientMap = currentChannel->second.first->getClients();
+	if (clientMap.find(fd) == clientMap.end() || !clientMap.find(fd)->second.second)
+	{
+  	sendRPL(fd, "irc.local", "482", clients[fd]->getNickname().c_str(),
+			channelName.c_str(), ":You're not channel operator", NULL);
+		return;
+	}
+
+	std::map<std::string, std::pair<Client*, bool> >& ClientMapInvite
+			= currentChannel->second.first->getClientMapInvite();
+	std::map<std::string, std::pair<Client*, bool> >& strClientMap = 
+    currentChannel->second.first->getClientMapOp();
+	if (strClientMap.find(guestName) != strClientMap.end())
+	{
+  	sendRPL(fd, "irc.local", "443", clients[fd]->getNickname().c_str(),
+			guestName.c_str(), channelName.c_str(), ":Is already on channel", NULL);
+  	return;
+	}
+
+	Client *guestClient = strClients.find(guestName)->second;
+	ClientMapInvite[guestName] = std::make_pair(guestClient, true);
+	sendRPL(fd, "irc.local", "341", clients[fd]->getNickname().c_str(),
+		guestName.c_str(), channelName.c_str(), NULL);
+	std::string inviteMsg = ":" + clients[fd]->getNickname() + " INVITE " + 
+		guestName + " :" + channelName;
+	send(guestClient->getClientfd(), inviteMsg.c_str(), inviteMsg.length(), 0);
+}

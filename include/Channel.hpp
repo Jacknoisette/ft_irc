@@ -24,7 +24,8 @@ class Channel {
 		std::string name;
 		std::string topic;
 		std::map<int, std::pair<Client*, bool> > clients_list;
-		std::map<std::string, std::pair<Client*, bool> > strClientMap;
+		std::map<std::string, std::pair<Client*, bool> > ClientMapOp;
+		std::map<std::string, std::pair<Client*, bool> > ClientMapInvite;
 		bool isOnInvite;
 		bool isTopicRestricted;
 		std::string password;
@@ -49,7 +50,8 @@ class Channel {
 		void				setChannelLimit(size_t channelLimit);
 		size_t				getChannelLimit(void) const;
 		std::map<int, std::pair<Client*, bool> >	&getClients(void);
-		std::map<std::string, std::pair<Client*, bool> > &getstrClientMap(void);
+		std::map<std::string, std::pair<Client*, bool> > &getClientMapOp(void);
+		std::map<std::string, std::pair<Client*, bool> > &getClientMapInvite(void);
 
 		void	addClient(int client_fd, Client *new_client, bool is_op);
 		void	removeClient(int fd);

@@ -58,6 +58,8 @@ void Server::checkAuth(int fd, std::vector<std::vector<std::string> >& cmd_group
 {
 	if (clients[fd]->getAuthenticated())
 		return;
+	else if (cmd_group.empty() || cmd_group.at(0).empty())
+		return;
 	for (std::vector<std::vector<std::string> >::iterator cmdIt = cmd_group.begin(); 
 		 cmdIt != cmd_group.end(); )
 	{
