@@ -83,7 +83,7 @@ void	Server::ultimateDebug(){
 				std::cout << std::flush << channels_it->second->getPassword();
 			std::cout << "\033[4m" << std::endl;
 			
-			for (std::map<int, std::pair<Client*, bool> >::iterator clients_it = channels_it->second->getClients().begin(); clients_it != channels_it->second->getClients().end(); clients_it++){
+			for (std::map<int, std::pair<Client*, bool> >::iterator clients_it = channels_it->second->getClientsListFd().begin(); clients_it != channels_it->second->getClientsListFd().end(); clients_it++){
 				if (clients_it->second.second)
 					std::cout << std::flush << "@";
 				std::cout << std::flush << "client : " << clients_it->second.first->getNickname();

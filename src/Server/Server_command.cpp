@@ -20,8 +20,6 @@ void	Server::join(int fd, std::vector<std::string> arg){
 				"JOIN", ":Not enough parameters", NULL);
 		return ;
 	}
-
-	// TODO: Si channel +i --> 473 ERR_INVITEONLYCHAN <channel> :Cannot join channel (+i)
 	
 	std::vector<std::string> channel_list;
 	std::vector<std::string> key_list;
@@ -36,12 +34,17 @@ void	Server::join(int fd, std::vector<std::string> arg){
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()) << std::endl;
 		return ;
 	}
-	// (void)key_list;
 	std::vector<std::pair<std::string, std::string> > channel_list_lower = toLowerVector(channel_list);
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = channel_list_lower.begin(); it != channel_list_lower.end(); it++)
 	{
 		std::string *lower = &it->first;
 		std::string *original = &it->second;
+		if ((*lower)[0] != '#')
+		{
+			sendRPL(fd, "irc.local", "476", clients[fd]->getNickname().c_str(),
+					lower->c_str(), ":Bad Channel Mask", NULL);
+			continue ;
+		}
 		std::map<std::string, Channel*>::iterator channels_pos = channels.find(*lower);
 		if (channels_pos != channels.end()){
 			if (clients[fd]->getChannels().find(*lower) == clients[fd]->getChannels().end()){
@@ -50,19 +53,27 @@ void	Server::join(int fd, std::vector<std::string> arg){
 						original->c_str(), ":You have joined too many channels", NULL);
 					continue ;
 				}
-				if (channels_pos->second->getClients().size() >= channels_pos->second->getChannelLimit() && channels_pos->second->getChannelLimit() > 0){
-					sendRPL(fd, "irc.local", "471",
+				if (channels_pos->second->getIsOnInvite()){
+					std::vector<int> &clientInvite = channels_pos->second->getClientInvite();
+					std::vector<int>::iterator itClientInvite = std::find(clientInvite.begin(), clientInvite.end(), fd);
+					if (itClientInvite == clientInvite.end()){
+						sendRPL(fd, "irc.local", "473", clients[fd]->getNickname().c_str(),
+							original->c_str(), ":Cannot join channel (+i)", NULL);
+						continue ;
+					}
+					clientInvite.erase(itClientInvite);
+				}
+				if (channels_pos->second->getClientsListFd().size() >= channels_pos->second->getChannelLimit() && channels_pos->second->getChannelLimit() > 0){
+					sendRPL(fd, "irc.local", "471", clients[fd]->getNickname().c_str(),
 						original->c_str(), ":Cannot join channel (+l)", NULL);
 					continue ;
 				}
 				size_t key_pos = std::distance(channel_list_lower.begin(), it);
 				const std::string& channel_key = channels_pos->second->getPassword();
 				bool key_needed = !channel_key.empty();
-				std::cout << "channel key :" << channel_key << std::endl;
-				std::cout << "key needed :" << key_needed << std::endl;
 				if (key_needed) {
 					if (key_pos >= key_list.size() || channel_key != key_list[key_pos]){
-						sendRPL(fd, "irc.local", "475",
+						sendRPL(fd, "irc.local", "475", clients[fd]->getNickname().c_str(),
 							original->c_str(), ":Cannot join channel (+k)", NULL);
 						continue;
 					}
@@ -93,6 +104,8 @@ void	Server::join(int fd, std::vector<std::string> arg){
 	}
 	if (DEBUG)
 		std::cout << info("Someone wants to join") << std::endl;
+	if (DEBUG)
+		ultimateDebug();
 }
 
 void	Server::part(int fd, std::vector<std::string> arg){
@@ -127,7 +140,7 @@ void	Server::part(int fd, std::vector<std::string> arg){
 		sendRPL_Channel(true, fd, actual_channel->getName(), rpl);
 		actual_channel->removeClient(fd);
 		clients[fd]->removeChannel(clients[fd]->getCurrentChannel());
-		if (actual_channel->getClients().size() == 0)
+		if (actual_channel->getClientsListFd().size() == 0)
 			removeChannel(clients[fd]->getCurrentChannel());
 		clients[fd]->updateCurrentChannel();
 	}
@@ -137,6 +150,12 @@ void	Server::part(int fd, std::vector<std::string> arg){
 		{
 			std::string *lower = &it->first;
 			std::string *original = &it->second;
+			if ((*lower)[0] != '#')
+			{
+				sendRPL(fd, "irc.local", "476", clients[fd]->getNickname().c_str(),
+						lower->c_str(), ":Bad Channel Mask", NULL);
+				continue ;
+			}
 			std::map<std::string, Channel*>::iterator channels_pos = channels.find(*lower);
 			if (channels_pos != channels.end()){
 				if (clients[fd]->getChannels().find(*lower) != clients[fd]->getChannels().end()){
@@ -147,7 +166,7 @@ void	Server::part(int fd, std::vector<std::string> arg){
 					sendRPL_Channel(true, fd, channels_pos->first, rpl);
 					channels_pos->second->removeClient(fd);
 					clients[fd]->removeChannel(*lower);
-					if (channels[*lower]->getClients().size() == 0)
+					if (channels[*lower]->getClientsListFd().size() == 0)
 						removeChannel(*lower);
 					clients[fd]->updateCurrentChannel();
 				}
@@ -162,6 +181,8 @@ void	Server::part(int fd, std::vector<std::string> arg){
 	}
 	if (DEBUG)
 		std::cout << info("Someone wants to leave") << std::endl;
+	if (DEBUG)
+		ultimateDebug();
 }
 
 void	Server::quit(int fd, std::vector<std::string> arg){
@@ -189,6 +210,8 @@ void	Server::quit(int fd, std::vector<std::string> arg){
 	garbage.push_back(client_leave);
 	if (DEBUG)
 		std::cout << info("Someone wants to quit") << std::endl;
+	if (DEBUG)
+		ultimateDebug();
 }
 
 void	Server::ping(int fd, std::vector<std::string> arg){
@@ -214,14 +237,10 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 				"PRIVMSG", ":No text to send", NULL);
 		return ;
 	}
-	std::vector<std::string> channel_list;
-	std::vector<std::string> client_list;
+	std::vector<std::string> target_list;
 	std::string msg;
 	try{
-		if (arg[1][0] == '#')
-			channel_list = check_channel_name(fd, arg[1], "PRIVMSG");
-		else
-			client_list = check_client_name(fd, arg[1]);
+		target_list = check_channel_name(fd, arg[1], "PRIVMSG");
 		ValidateMsgContent(fd, arg[2]);
 		msg = arg[2];
 	}
@@ -231,41 +250,53 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to send a Wrong msg or in a wrong Channel").c_str()) << std::endl;
 		return ;
 	}
-	if (!channel_list.empty()){
-		if (clients[fd]->getChannels().empty())
-			return ;
-		std::vector<std::pair<std::string, std::string> > channel_list_lower = toLowerVector(channel_list);
-		for (std::vector<std::pair<std::string, std::string> >::iterator it = channel_list_lower.begin(); it != channel_list_lower.end(); it++){
+	std::vector<std::string> already_sent;
+	if (!target_list.empty()){
+		std::vector<std::pair<std::string, std::string> > target_list_lower = toLowerVector(target_list);
+		for (std::vector<std::pair<std::string, std::string> >::iterator it = target_list_lower.begin(); it != target_list_lower.end(); it++){
 			std::string *lower = &it->first;
 			std::string *original = &it->second;
-			std::map<std::string, Channel*>::iterator channels_pos = channels.find(*lower);
-			if (channels_pos != channels.end()){
-				if (clients[fd]->getChannels().find(*lower) != clients[fd]->getChannels().end()){
-					std::string rpl = std::string(":" + clients[fd]->getNickname() + "!" +
+			std::vector<std::string>::iterator italready_sent = std::find(already_sent.begin(), already_sent.end(), (*lower));
+			if (italready_sent != already_sent.end()){
+				continue ;
+			}
+			already_sent.push_back((*lower));
+			if ((*lower)[0] == '#')
+			{
+				if (clients[fd]->getChannels().empty())
+					continue ;
+				std::map<std::string, Channel*>::iterator channels_pos = channels.find(*lower);
+				if (channels_pos == channels.end()){
+					sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
+							original->c_str(), ":No such channel", NULL);
+					continue ;
+				}
+				if (clients[fd]->getChannels().find(*lower) == clients[fd]->getChannels().end()){
+					sendRPL(fd, "irc.local", "442", clients[fd]->getNickname().c_str(),
+							original->c_str(), ":You're not on that channel", NULL);
+					continue ;
+				}
+				std::string rpl = std::string(":" + clients[fd]->getNickname() + "!" +
 						clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " PRIVMSG " +
 						channels_pos->second->getOGName() + " " + msg + "\n");
-					sendRPL_Channel(false, fd, channels_pos->first, rpl);
-				}
-				else {
-					sendRPL(fd, "irc.local", "442", clients[fd]->getNickname().c_str(),
-						original->c_str(), ":You're not on that channel", NULL);
-				}
+				sendRPL_Channel(false, fd, channels_pos->first, rpl);
 			} else {
-				sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
-						original->c_str(), ":No such channel", NULL);
-			}
-		}
-	}
-	else if (!client_list.empty()){
-		for (std::vector<std::string>::iterator it = client_list.begin(); it != client_list.end(); it++){
-			for (std::map<int, Client*>::iterator clients_pos = clients.begin(); clients_pos != clients.end(); clients_pos++){
-				if (toLowerString(clients_pos->second->getNickname()) == toLowerString(*it)){
-					if (clients_pos->first == fd)
-						continue ;
-					std::string rpl = std::string(clients[fd]->getNickname() + "!" +
-						clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " PRIVMSG " +
-						clients_pos->second->getNickname() + " " + msg + "\n");
-					sendRPL(clients_pos->first, rpl.c_str(), NULL);
+				bool found_nick = false;
+				for (std::map<int, Client*>::iterator clients_pos = clients.begin(); clients_pos != clients.end(); clients_pos++){
+					if (toLowerString(clients_pos->second->getNickname()) == (*lower)){
+						if (clients_pos->first == fd)
+							break ;
+						std::string rpl = std::string(clients[fd]->getNickname() + "!" +
+							clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " PRIVMSG " +
+							clients_pos->second->getNickname() + " " + msg);
+						sendRPL(clients_pos->first, rpl.c_str(), NULL);
+						found_nick = true;
+						break ;
+					}
+				}
+				if (!found_nick ){
+					sendRPL(fd, "irc.local", "401", clients[fd]->getNickname().c_str(),
+							original->c_str(), ":No such nick", NULL);
 				}
 			}
 		}
@@ -299,7 +330,7 @@ void Server::mode(int fd, std::vector<std::string> arg)
 		return;
 	}
 
-	std::map<int, std::pair<Client*, bool> >& clientMap = currentChannel->second.first->getClients();
+	std::map<int, std::pair<Client*, bool> >& clientMap = currentChannel->second.first->getClientsListFd();
 	if (clientMap.find(fd) == clientMap.end() || !clientMap.find(fd)->second.second)
 	{
   	  	sendRPL(fd, "irc.local", "482", clients[fd]->getNickname().c_str(),
@@ -308,7 +339,7 @@ void Server::mode(int fd, std::vector<std::string> arg)
 	}
 
 	std::map<std::string, std::pair<Client*, bool> >& strClientMap = 
-		currentChannel->second.first->getClientMapOp();
+		currentChannel->second.first->getClientsListStr();
 
 	std::string modeStr = arg.at(2);
 	if (modeStr.length() < 2) return;
@@ -427,6 +458,8 @@ void Server::mode(int fd, std::vector<std::string> arg)
 				std::string(1, mode).c_str(), ":is unknown mode char to me", NULL);
 			return;
 	}
+	if (DEBUG)
+		ultimateDebug();
 }
 
 void	Server::topic(int fd, std::vector<std::string> arg){
@@ -471,7 +504,7 @@ void	Server::topic(int fd, std::vector<std::string> arg){
 							channel.c_str(), ":No topic is set", NULL);
 				}
 			} else {
-				std::map<int, std::pair<Client *, bool> >::iterator client_pos = channel_pos->second->getClients().find(fd);
+				std::map<int, std::pair<Client *, bool> >::iterator client_pos = channel_pos->second->getClientsListFd().find(fd);
 				if (client_pos->second.second || !channel_pos->second->getIsTopicRestricted()){
 					new_topic = new_topic.substr(1);
 					channel_pos->second->setTopic(new_topic);
@@ -529,12 +562,13 @@ void	Server::nick(int fd, const std::vector<std::string> arg)
 	clients[fd]->setNickname(arg[1]);
 	clients[fd]->setNormalizedNick(toLowerString(arg[1]));
 	strClients[toLowerString(arg[1])] = clients[fd];
+	if (DEBUG)
+		ultimateDebug();
 }
 
 void Server::invite(int fd, std::vector<std::string> arg)
 {
-	if (arg.size() < 3)
-	{
+	if (arg.size() < 3){
 		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
 			"INVITE", ": Not enough parameters", NULL);
 		return;
@@ -542,57 +576,59 @@ void Server::invite(int fd, std::vector<std::string> arg)
 	std::string channelName = toLowerString(arg.at(2));
 	std::string guestName = toLowerString(arg.at(1));
 
-	if (channels.find(channelName) == channels.end())
-	{
+	if (channels.find(channelName) == channels.end()){
 		sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
 			channelName.c_str(), ":No such channel", NULL);
 		return;
 	}
 
-	std::map<std::string, std::pair<Channel*, size_t> >& channelMap = clients[fd]->getChannels();
-	std::map<std::string, std::pair<Channel*, size_t> >::iterator currentChannel = 
-		channelMap.find(channelName);
+	std::map<std::string, std::pair<Channel*, size_t> >& client_channels = clients[fd]->getChannels();
+	std::map<std::string, std::pair<Channel*, size_t> >::iterator itInviteInChannel = 
+		client_channels.find(channelName);
 
-	if (currentChannel == channelMap.end())
-	{
+	if (itInviteInChannel == client_channels.end()){
 		sendRPL(fd, "irc.local", "442", clients[fd]->getNickname().c_str(),
 			channelName.c_str(), ":You're not on that channel", NULL);
 		return;
 	}
 
-	if (strClients.find(guestName) == strClients.end())
-	{
-		sendRPL(fd, "irc.local", "401", clients[fd]->getNickname().c_str(),
-			arg.at(1).c_str(), ":No such nick/channel", NULL);
-		return ;
-	}
-
-	std::map<int, std::pair<Client*, bool> >& clientMap = currentChannel->second.first->getClients();
+	std::map<int, std::pair<Client*, bool> >& clientMap = itInviteInChannel->second.first->getClientsListFd();
 	if (clientMap.find(fd) == clientMap.end() || !clientMap.find(fd)->second.second)
 	{
-  	sendRPL(fd, "irc.local", "482", clients[fd]->getNickname().c_str(),
+  		sendRPL(fd, "irc.local", "482", clients[fd]->getNickname().c_str(),
 			channelName.c_str(), ":You're not channel operator", NULL);
 		return;
 	}
-
-	std::map<std::string, std::pair<Client*, bool> >& ClientMapInvite
-			= currentChannel->second.first->getClientMapInvite();
-	std::map<std::string, std::pair<Client*, bool> >& strClientMap = 
-    currentChannel->second.first->getClientMapOp();
-	if (strClientMap.find(guestName) != strClientMap.end())
-	{
-  	sendRPL(fd, "irc.local", "443", clients[fd]->getNickname().c_str(),
-			guestName.c_str(), channelName.c_str(), ":Is already on channel", NULL);
-  	return;
+	
+	if (strClients.find(guestName) == strClients.end()){
+		sendRPL(fd, "irc.local", "401", clients[fd]->getNickname().c_str(),
+			arg.at(1).c_str(), ":No such nick", NULL);
+		return ;
 	}
 
+	std::map<std::string, std::pair<Client*, bool> >& channelListOfClientStr
+    		= itInviteInChannel->second.first->getClientsListStr();
+	if (channelListOfClientStr.find(guestName) != channelListOfClientStr.end()){
+		sendRPL(fd, "irc.local", "443", clients[fd]->getNickname().c_str(),
+				guestName.c_str(), channelName.c_str(), ":Is already on channel", NULL);
+		return;
+	}
+
+	std::vector<int> &clientInvite = itInviteInChannel->second.first->getClientInvite();
 	Client *guestClient = strClients.find(guestName)->second;
-	ClientMapInvite[guestName] = std::make_pair(guestClient, true);
+	int 	guestClientFd = guestClient->getClientfd();
+
+	std::vector<int>::iterator it = std::find(clientInvite.begin(), clientInvite.end(), guestClientFd);
+    if (it != clientInvite.end())
+		return ;
+	clientInvite.push_back(guestClientFd);
 	sendRPL(fd, "irc.local", "341", clients[fd]->getNickname().c_str(),
-		guestName.c_str(), channelName.c_str(), NULL);
-	std::string inviteMsg = ":" + clients[fd]->getNickname() + " INVITE " + 
-		guestName + " :" + channelName;
-	send(guestClient->getClientfd(), inviteMsg.c_str(), inviteMsg.length(), 0);
+			guestClient->getNickname().c_str(), channelName.c_str(), NULL);
+
+	std::string rpl = std::string(clients[fd]->getNickname() + "!" +
+		clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " INVITE " +
+			guestClient->getNickname() + " :" + channelName.c_str() + "\n");
+	sendRPL(guestClientFd, rpl.c_str(), NULL);
 }
 
 void	Server::applykick(int fd, int kick_client_fd, std::string &channel_lower, std::string &kick_msg){
@@ -602,7 +638,7 @@ void	Server::applykick(int fd, int kick_client_fd, std::string &channel_lower, s
 	sendRPL_Channel(true, fd, channel_lower, rpl);
 	channels[channel_lower]->removeClient(kick_client_fd);
 	clients[kick_client_fd]->removeChannel(channel_lower);
-	if (channels[channel_lower]->getClients().size() == 0)
+	if (channels[channel_lower]->getClientsListFd().size() == 0)
 		removeChannel(channel_lower);
 	clients[kick_client_fd]->updateCurrentChannel();
 }
@@ -619,15 +655,13 @@ void	Server::kick(int fd, std::vector<std::string> arg){
 	try{
 		channel_list = check_channel_name(fd, arg[1], "PRIVMSG");
 		client_list = check_client_name(fd, arg[2]);
-		if (arg.size() >= 4){
-			if (arg[3].empty())
-				arg[3] = std::string(":") + clients[fd]->getNickname();
-			else if (arg[3][0] == ':')
-				arg[3] = clients[fd]->getNickname();
-			ValidateMsgContent(fd, arg[3]);
-			kick_msg = arg[3];
+		if (arg.size() >= 4) {
+			if (arg[3].empty() || arg[3] == ":")
+				kick_msg = ":" + clients[fd]->getNickname();
+			else
+				kick_msg = arg[3];
 		} else {
-			kick_msg = std::string(":") + clients[fd]->getNickname();
+			kick_msg = ":" + clients[fd]->getNickname();
 		}
 	}
 	catch (std::runtime_error & e){
@@ -657,7 +691,7 @@ void	Server::kick(int fd, std::vector<std::string> arg){
 	else
 		max_size = client_list_lower.size();
 	for (size_t i = 0; i < max_size; i++){
-		std::string *channel_lower, *channel_original, *client_lower, *client_original;
+		std::string *channel_lower, *channel_original, *client_lower, *client_original = NULL;
 		if (channel_list_lower.size() == client_list_lower.size()) {
 			channel_lower = &channel_list_lower[i].first;
 			channel_original = &channel_list_lower[i].second;
@@ -684,13 +718,13 @@ void	Server::kick(int fd, std::vector<std::string> arg){
 				channel_original->c_str(), ":You're not on that channel", NULL);
 			continue ;
 		}
-		std::map<std::string, std::pair<Client *, bool> >::iterator client_to_kick = channels[*channel_lower]->getClientMapOp().find(*client_lower);
-		if (client_to_kick == channels[*channel_lower]->getClientMapOp().end()){
+		std::map<std::string, std::pair<Client *, bool> >::iterator client_to_kick = channels[*channel_lower]->getClientsListStr().find(*client_lower);
+		if (client_to_kick == channels[*channel_lower]->getClientsListStr().end()){
 			sendRPL(fd, "irc.local", "441", clients[fd]->getNickname().c_str(),
 					client_original->c_str(), channel_original->c_str(), ":They aren't on that channel", NULL);
 			continue ;
 		}
-		std::map<int, std::pair<Client *, bool> >::iterator client_pos = channels[*channel_lower]->getClients().find(fd);
+		std::map<int, std::pair<Client *, bool> >::iterator client_pos = channels[*channel_lower]->getClientsListFd().find(fd);
 		if (!client_pos->second.second){
 			sendRPL(fd, "irc.local", "482", clients[fd]->getNickname().c_str(),
 						channel_original->c_str(), ":You're not channel operator", NULL);
@@ -700,4 +734,6 @@ void	Server::kick(int fd, std::vector<std::string> arg){
 	}
 	if (DEBUG)
 		std::cout << info("Someone wants to kick") << std::endl;
+	if (DEBUG)
+		ultimateDebug();
 }

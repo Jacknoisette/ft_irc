@@ -87,7 +87,7 @@ void Server::commandConfig(void){
 	cmd_func_list["PRIVMSG"] = &Server::privmsg;
 	cmd_func_list["MODE"] = &Server::mode;
 	cmd_func_list["NICK"] = &Server::nick;
-	cmd_func_list["INVITE"] = &Server::join;
+	cmd_func_list["INVITE"] = &Server::invite;
 	cmd_func_list["TOPIC"] = &Server::topic;
 	cmd_func_list["KICK"] = &Server::kick;
 }
@@ -136,6 +136,12 @@ void Server::removeClient(int fd)
 	{
 		strClients.erase(clients[fd]->getNickname());
 		clients.erase(fd);
+	}
+	for (std::vector<struct pollfd>::iterator it = pollfds.begin(); it != pollfds.end(); ){
+		if (it->fd == fd)
+			it = pollfds.erase(it);
+		else
+			it++;
 	}
 	for (std::list<Client>::iterator acIt = allClients.begin(); acIt != allClients.end();)
 	{

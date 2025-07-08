@@ -40,16 +40,10 @@ std::vector<std::string> Server::check_channel_name(int fd, std::string arg, std
 				arg.c_str(), ":Channel name is too long", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 	}
-	if (arg.size() <= 1)
+	if (arg.size() <= 1 && arg[0] == '#')
 	{
 		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
 				cmd_name.c_str(), ":Not enough parameters", NULL);
-		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
-	}
-	if (arg[0] != '#')
-	{
-		sendRPL(fd, "irc.local", "476", clients[fd]->getNickname().c_str(),
-				arg.c_str(), ":Bad Channel Mask", NULL);
 		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 	}
 	for (size_t i = 0; i < arg.size(); i++)
@@ -61,17 +55,7 @@ std::vector<std::string> Server::check_channel_name(int fd, std::string arg, std
 			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 		}
 	}
-	std::vector<std::string> channels = parsing_channel(arg);
-	for (size_t i = 0; i < channels.size(); i++)
-	{
-		if (channels[i][0] != '#')
-		{
-			sendRPL(fd, "irc.local", "476", clients[fd]->getNickname().c_str(),
-					arg.c_str(), ":Bad Channel Mask", NULL);
-			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
-		}
-	}
-	return channels;
+	return  parsing_channel(arg);
 }
 
 void Server::client_name_parsing(int fd, std::string arg)
@@ -185,7 +169,7 @@ void Server::sendWelcomeChannelMsg(const Client *client, std::string channel_nam
 
 void Server::sendRPL_Channel(bool self_display, int fd, std::string channel_name, std::string msg)
 {
-	for (std::map<int, std::pair<Client *, bool> >::const_iterator client = channels.at(channel_name)->getClients().begin(); client != channels.at(channel_name)->getClients().end(); client++)
+	for (std::map<int, std::pair<Client *, bool> >::const_iterator client = channels.at(channel_name)->getClientsListFd().begin(); client != channels.at(channel_name)->getClientsListFd().end(); client++)
 	{
 		if (!self_display)
 		{

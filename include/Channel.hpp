@@ -23,9 +23,9 @@ class Channel {
 		std::string og_name;
 		std::string name;
 		std::string topic;
-		std::map<int, std::pair<Client*, bool> > clients_list;
-		std::map<std::string, std::pair<Client*, bool> > ClientMapOp;
-		std::map<std::string, std::pair<Client*, bool> > ClientMapInvite;
+		std::map<int, std::pair<Client*, bool> > clientsListFd;
+		std::map<std::string, std::pair<Client*, bool> > clientsListStr;
+		std::vector<int>	clientInvite;
 		bool isOnInvite;
 		bool isTopicRestricted;
 		std::string password;
@@ -49,9 +49,9 @@ class Channel {
 		void				setPassword(const std::string& password);
 		void				setChannelLimit(size_t channelLimit);
 		size_t				getChannelLimit(void) const;
-		std::map<int, std::pair<Client*, bool> >	&getClients(void);
-		std::map<std::string, std::pair<Client*, bool> > &getClientMapOp(void);
-		std::map<std::string, std::pair<Client*, bool> > &getClientMapInvite(void);
+		std::map<int, std::pair<Client*, bool> >	&getClientsListFd(void);
+		std::map<std::string, std::pair<Client*, bool> > &getClientsListStr(void);
+		std::vector<int>&	getClientInvite(void);
 
 		void	addClient(int client_fd, Client *new_client, bool is_op);
 		void	removeClient(int fd);

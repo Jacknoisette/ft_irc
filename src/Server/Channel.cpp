@@ -14,8 +14,9 @@
 
 Channel::Channel()
 	: og_name("#channel"), name("#channel"), topic("")
-	, clients_list()
-	, ClientMapOp()
+	, clientsListFd()
+	, clientsListStr()
+	, clientInvite()
 	, isOnInvite(false)
 	, isTopicRestricted(true)
 	, password("")
@@ -25,8 +26,9 @@ Channel::Channel()
 
 Channel::Channel(std::string _name)
 	: og_name(_name), name(toLowerString(_name)), topic("")
-	, clients_list()
-	, ClientMapOp()
+	, clientsListFd()
+	, clientsListStr()
+	, clientInvite()
 	, isOnInvite(false)
 	, isTopicRestricted(true)
 	, password("")
@@ -48,12 +50,13 @@ Channel &Channel::operator=(const Channel &src){
 		this->og_name = src.og_name;
 		this->name = src.name;
 		this->topic = src.topic;
-		this->clients_list = src.clients_list;
-		this->ClientMapOp = src.ClientMapOp;
+		this->clientsListFd = src.clientsListFd;
+		this->clientsListStr = src.clientsListStr;
 		this->isOnInvite = src.isOnInvite;
 		this->isTopicRestricted = src.isTopicRestricted;
 		this->password = src.password;
 		this->channelLimit = src.channelLimit;
+		this->clientInvite = src.clientInvite;
 	}
 	return *this;
 }
@@ -66,8 +69,8 @@ const std::string	&Channel::getName(void) const{
 	return name;
 }
 
-std::map<int, std::pair<Client*, bool> >	&Channel::getClients(void){
-	return clients_list;
+std::map<int, std::pair<Client*, bool> >	&Channel::getClientsListFd(void){
+	return clientsListFd;
 }
 
 bool Channel::getIsOnInvite(void) const
@@ -120,63 +123,62 @@ size_t Channel::getChannelLimit() const
 	return (channelLimit);
 }
 
-std::map<std::string, std::pair<Client*, bool> >& Channel::getClientMapOp(void)
+std::map<std::string, std::pair<Client*, bool> >& Channel::getClientsListStr(void)
 {
-	return (ClientMapOp);
+	return (clientsListStr);
 }
 
-std::map<std::string, std::pair<Client*, bool> >& Channel::getClientMapInvite(void)
+std::vector<int>& Channel::getClientInvite(void)
 {
-	return (ClientMapInvite);
+	return (clientInvite);
 }
 
 void	Channel::addClient(int client_fd, Client *new_client, bool is_op){
-	if (clients_list.find(client_fd) == clients_list.end()){
+	if (clientsListFd.find(client_fd) == clientsListFd.end()){
 		std::pair<Client*, bool> client_def;
 		client_def.first = new_client;
 		client_def.second = is_op;
-		clients_list[client_fd] = client_def;
+		clientsListFd[client_fd] = client_def;
 	}
-	if (ClientMapOp.find(new_client->getNickname()) == ClientMapOp.end())
+	if (clientsListStr.find(new_client->getNickname()) == clientsListStr.end())
 	{
 		std::pair<Client*, bool> clientPair;
 		clientPair.first = new_client;
 		clientPair.second = is_op;
-		ClientMapOp[new_client->getNickname()] = clientPair;
-	}
-	if (ClientMapInvite.find(new_client->getNickname()) == ClientMapInvite.end())
-	{
-		std::pair<Client*, bool> clientPair;
-		clientPair.first = new_client;
-		ClientMapInvite[new_client->getNickname()] = clientPair;
+		clientsListStr[new_client->getNickname()] = clientPair;
 	}
 }
 
 void	Channel::removeClient(int fd)
 {
-	std::string clientName = clients_list.find(fd)->second.first->getNickname();
-	if (ClientMapOp.find(clientName) != ClientMapOp.end())
-		ClientMapOp.erase(clientName);
-	if (ClientMapInvite.find(clientName) != ClientMapInvite.end())
-		ClientMapInvite.erase(clientName);
-	if (clients_list.find(fd) != clients_list.end())
-		clients_list.erase(fd);
+	std::string clientName = clientsListFd.find(fd)->second.first->getNickname();
+	if (clientsListStr.find(clientName) != clientsListStr.end())
+		clientsListStr.erase(clientName);
+	if (clientsListFd.find(fd) != clientsListFd.end())
+		clientsListFd.erase(fd);
 	if (DEBUG)
 		std::cout << info(std::string("A client with fd " + to_string(fd) + ", leaved the channel " + name +  "!").c_str())<< std::endl;
 }
 
-const std::string Channel::getListClientByType(void) const{
+const std::string Channel::getListClientByType(void) const {
 	std::string list = ":";
-	std::string listop;
-	std::string listclient;
-	for (std::map<int, std::pair<Client*, bool> >::const_iterator client = clients_list.begin(); client != clients_list.end(); client++){
-		std::string name = client->second.first->getNickname();
-		if (client->second.second == true)
-			listop += ((client != clients_list.begin()) ? " @" : "@") + name;
-		else
-			listclient += ((client != clients_list.begin()) ? " " : "") + name;
+	std::vector<std::string> nicks;
+
+	for (std::map<int, std::pair<Client*, bool> >::const_iterator it = clientsListFd.begin(); it != clientsListFd.end(); ++it) {
+		if (it->second.second)
+			nicks.push_back("@" + it->second.first->getNickname());
 	}
-	list += listop + listclient;
+	for (std::map<int, std::pair<Client*, bool> >::const_iterator it = clientsListFd.begin(); it != clientsListFd.end(); ++it) {
+		if (!it->second.second)
+			nicks.push_back(it->second.first->getNickname());
+	}
+
+	for (size_t i = 0; i < nicks.size(); ++i) {
+		if (i != 0)
+			list += " ";
+		list += nicks[i];
+	}
+
 	return list;
 }
 

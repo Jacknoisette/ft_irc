@@ -204,8 +204,8 @@ void	Server::server_iteration()
 		return ;
 	}
 
-	if (DEBUG)
-		socket_debug();
+	// if (DEBUG)
+	// 	socket_debug();
 	
 	if (pollfds[0].revents & POLLIN){
 		add_new_client();
@@ -213,5 +213,4 @@ void	Server::server_iteration()
 	detect_client_input();
 	detect_client_output();
 	take_out_the_trash();
-	ultimateDebug();
 }
