@@ -263,8 +263,6 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 			already_sent.push_back((*lower));
 			if ((*lower)[0] == '#')
 			{
-				if (clients[fd]->getChannels().empty())
-					continue ;
 				std::map<std::string, Channel*>::iterator channels_pos = channels.find(*lower);
 				if (channels_pos == channels.end()){
 					sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
@@ -558,10 +556,12 @@ void	Server::nick(int fd, const std::vector<std::string> arg)
 		sendRPL(fd, "irc.local", "433", arg[1].c_str(), ":Nickname is already in use", NULL);
 		return;
 	}
-
+	if (strClients.find(clients[fd]->getNormalizedNick()) != strClients.end())
+		strClients.erase(clients[fd]->getNormalizedNick());
 	clients[fd]->setNickname(arg[1]);
 	clients[fd]->setNormalizedNick(toLowerString(arg[1]));
 	strClients[toLowerString(arg[1])] = clients[fd];
+	
 	if (DEBUG)
 		ultimateDebug();
 }
