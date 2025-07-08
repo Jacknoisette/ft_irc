@@ -196,7 +196,10 @@ void	Server::quit(int fd, std::vector<std::string> arg){
 		if (arg.size() >= 2){
 			ValidateMsgContent(fd, arg[1]);
 			msg = arg[1];
-		}	
+		}
+		else {
+			msg = ":Client Quit";
+		}
 	}
 	catch (std::runtime_error & e){
 		std::cout << e.what() << std::endl;
@@ -263,8 +266,6 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 			already_sent.push_back((*lower));
 			if ((*lower)[0] == '#')
 			{
-				if (clients[fd]->getChannels().empty())
-					continue ;
 				std::map<std::string, Channel*>::iterator channels_pos = channels.find(*lower);
 				if (channels_pos == channels.end()){
 					sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
