@@ -691,7 +691,8 @@ void	Server::kick(int fd, std::vector<std::string> arg){
 	else
 		max_size = client_list_lower.size();
 	for (size_t i = 0; i < max_size; i++){
-		std::string *channel_lower, *channel_original, *client_lower, *client_original = NULL;
+		std::string *channel_lower, *channel_original, *client_lower, *client_original;
+		channel_lower = NULL;
 		if (channel_list_lower.size() == client_list_lower.size()) {
 			channel_lower = &channel_list_lower[i].first;
 			channel_original = &channel_list_lower[i].second;

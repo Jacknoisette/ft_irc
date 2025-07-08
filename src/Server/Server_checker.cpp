@@ -85,7 +85,6 @@ void Server::checkAuth(int fd, std::vector<std::vector<std::string> >& cmd_group
 			else
 			{
 				sendRPL(fd, "irc.local", "464", (*cmdIt)[1].c_str(), ":Password incorrect", NULL);
-				quit(fd, *cmdIt);
 				return;
 			}
 		}
