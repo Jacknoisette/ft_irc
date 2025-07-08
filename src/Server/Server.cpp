@@ -87,8 +87,9 @@ void Server::commandConfig(void){
 	cmd_func_list["PRIVMSG"] = &Server::privmsg;
 	cmd_func_list["MODE"] = &Server::mode;
 	cmd_func_list["NICK"] = &Server::nick;
-	// cmd_func_list["TOPIC"] = &Server::topic;
 	cmd_func_list["INVITE"] = &Server::join;
+	cmd_func_list["TOPIC"] = &Server::topic;
+	cmd_func_list["KICK"] = &Server::kick;
 }
 
 const std::string Server::getPassword(void) const{
@@ -118,12 +119,14 @@ void Server::setPort(int _port){
 void Server::removeChannel(std::string _channel_name){
 	if (channels.find(_channel_name) != channels.end()){
 		channels.erase(_channel_name);
-		std::cout << info(std::string("Channel " + _channel_name + ", is detroyed !").c_str())<< std::endl;
+		std::cout << info(std::string("Channel " + _channel_name + ", is destroyed !").c_str())<< std::endl;
 	}
-	for (std::list<Channel>::iterator acIt = allChannels.begin(); acIt != allChannels.end(); acIt++)
-		if (acIt->getName() == _channel_name){
-			allChannels.erase(acIt);
-		std::cout << info(std::string("Channel " + _channel_name + ", is detroyed !").c_str())<< std::endl;
+	for (std::list<Channel>::iterator acIt = allChannels.begin(); acIt != allChannels.end(); ){
+		if (acIt->getName() == _channel_name)
+			acIt = allChannels.erase(acIt);
+		else
+			acIt++;
+		std::cout << info(std::string("Channel " + _channel_name + ", is destroyed !").c_str())<< std::endl;
 	}
 }
 

@@ -29,25 +29,25 @@ def main():
     time.sleep(1)
 
     while True:
-        rand = random.randint(0, 5)
-        print("\033[5m\033[33m", rand ,"\033[0m")
-        ircmsg = ""
-        if rand == 1 :
-            msg = random_long_message(random.randint(0, 1500))
-            ircmsg = f"PRIVMSG {CHANNEL} :{msg}\r\n"
-        elif rand == 2:
-            msg = random_long_message(random.randint(0, 50))
-            ircmsg = f"JOIN #{msg}\r\n"
-        elif rand == 3:
-            ircmsg = f"PRIVMSG {CHANNEL} :"
-        elif rand == 4:
-            ircmsg = f""
-        elif rand == 5:
-            msg = random_long_ascii(random.randint(0, 1500))
-            ircmsg = f"{msg}"
+        # rand = random.randint(0, 5)
+        # print("\033[5m\033[33m", rand ,"\033[0m")
+        ircmsg = "\r\n"
+        # if rand == 1 :
+        #     msg = random_long_message(random.randint(0, 1500))
+        #     ircmsg = f"PRIVMSG {CHANNEL} :{msg}\r\n"
+        # elif rand == 2:
+        #     msg = random_long_message(random.randint(0, 50))
+        #     ircmsg = f"JOIN #{msg}\r\n"
+        # elif rand == 3:
+        #     ircmsg = f"PRIVMSG {CHANNEL} :"
+        # elif rand == 4:
+        #     ircmsg = f""
+        # elif rand == 5:
+        #     msg = random_long_ascii(random.randint(0, 1500))
+        #     ircmsg = f"{msg}"
         s.sendall(ircmsg.encode())
         print(f"Sent: {ircmsg[:80]}... ({len(ircmsg)} chars)")
-        time.sleep(0.1)
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()

@@ -15,7 +15,7 @@
 int main(int argc, char **argv)
 {
 	Server server;
-	
+
 	if (argc != 3)
 		return (std::cout << "Error Wrong Input:\n[./ircserv <port> <password>]" << std::endl, -1);
 	try{
