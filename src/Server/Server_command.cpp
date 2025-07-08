@@ -196,7 +196,10 @@ void	Server::quit(int fd, std::vector<std::string> arg){
 		if (arg.size() >= 2){
 			ValidateMsgContent(fd, arg[1]);
 			msg = arg[1];
-		}	
+		}
+		else {
+			msg = ":Client Quit";
+		}
 	}
 	catch (std::runtime_error & e){
 		std::cout << e.what() << std::endl;

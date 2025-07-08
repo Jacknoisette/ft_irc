@@ -166,9 +166,14 @@ void Server::detect_client_output()
 void	Server::take_out_the_trash(){
 	for (size_t i = 0; i < garbage.size(); i++)
 	{
+		std::string rpl = std::string(clients[garbage[i].first]->getNickname() + "!" +
+			clients[garbage[i].first]->getUsername() + "@" + clients[garbage[i].first]->getHostname() + " QUIT " +
+			garbage[i].second.c_str() + "\n");
 		for (std::map<std::string, std::pair<Channel*, size_t> >::iterator it = clients[garbage[i].first]->getChannels().begin();
-				it != clients[garbage[i].first]->getChannels().end(); it++)
+				it != clients[garbage[i].first]->getChannels().end(); it++){
+			sendRPL_Channel(false, garbage[i].first, it->first, rpl);
 			it->second.first->removeClient(garbage[i].first);
+		}
 		removeClient(garbage[i].first);
 		for (std::vector<pollfd>::iterator it = pollfds.begin() + 1; it != pollfds.end(); )
 		{
