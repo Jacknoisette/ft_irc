@@ -23,7 +23,7 @@ void Server::client_command(int client_fd, std::vector<std::vector<std::string> 
 	check_BaseCmd(client_fd, cmdGroup);
 }
 
-void Server::check_BaseCmd(int fd, const std::vector<std::vector<std::string> > &cmd_group){
+void Server::check_BaseCmd(int fd, std::vector<std::vector<std::string> > &cmd_group){
 	for (std::vector<std::vector<std::string> >::const_iterator cmd = cmd_group.begin(); cmd != cmd_group.end(); cmd++){
 		if (cmd->empty())
 			continue ;
@@ -63,6 +63,8 @@ void Server::checkAuth(int fd, std::vector<std::vector<std::string> >& cmd_group
 	for (std::vector<std::vector<std::string> >::iterator cmdIt = cmd_group.begin(); 
 		 cmdIt != cmd_group.end(); )
 	{
+		if (cmdIt->empty())
+			return ;
 		if (!clients[fd]->getUsername().empty() && !clients[fd]->getNormalizedNick().empty())
 			break;
 		if (password.empty())
@@ -109,7 +111,7 @@ void Server::checkAuth(int fd, std::vector<std::vector<std::string> >& cmd_group
 		{
 			sendRPL(fd, "irc.local", "451", "*", "You have not registered", NULL);
 		}
-			cmdIt = cmd_group.erase(cmdIt);
+		cmdIt = cmd_group.erase(cmdIt);
 	}
 	if (!clients[fd]->getUsername().empty() && !clients[fd]->getNormalizedNick().empty())
 	{

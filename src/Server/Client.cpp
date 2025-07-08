@@ -14,12 +14,12 @@
 
 Client::Client()
 	: client_fd(-1), nickname(""), normalizedNick(""), username(""), hostname(""), authenticated(false)
-		,passwordMatch(false), in_channels(), sendBuffer(){
+		,passwordMatch(false), in_channels(), sendBuffer(""){
 }
 
 Client::Client(int _client_fd)
 	: client_fd(_client_fd), nickname(""), normalizedNick(""), username(""), hostname(""), authenticated(false)
-		,passwordMatch(false), in_channels(), sendBuffer(){
+		,passwordMatch(false), in_channels(), sendBuffer(""){
 }
 
 Client::~Client()

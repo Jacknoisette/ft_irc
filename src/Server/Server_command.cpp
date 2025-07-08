@@ -22,7 +22,6 @@ void	Server::join(int fd, std::vector<std::string> arg){
 	}
 
 	// TODO: Si channel +i --> 473 ERR_INVITEONLYCHAN <channel> :Cannot join channel (+i)
-	// TODO: Si banni --> 474 ERR_BANNEDFROMCHAN <channel> :Cannot join channel (+b)
 	
 	std::vector<std::string> channel_list;
 	std::vector<std::string> key_list;
@@ -238,13 +237,22 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 		std::vector<std::pair<std::string, std::string> > channel_list_lower = toLowerVector(channel_list);
 		for (std::vector<std::pair<std::string, std::string> >::iterator it = channel_list_lower.begin(); it != channel_list_lower.end(); it++){
 			std::string *lower = &it->first;
+			std::string *original = &it->second;
 			std::map<std::string, Channel*>::iterator channels_pos = channels.find(*lower);
-			if (channels_pos != channels.end() &&
-					clients[fd]->getChannels().find(*lower) != clients[fd]->getChannels().end()){
-				std::string rpl = std::string(":" + clients[fd]->getNickname() + "!" +
-					clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " PRIVMSG " +
-					channels_pos->second->getOGName() + " " + msg + "\n");
-				sendRPL_Channel(false, fd, channels_pos->first, rpl);
+			if (channels_pos != channels.end()){
+				if (clients[fd]->getChannels().find(*lower) != clients[fd]->getChannels().end()){
+					std::string rpl = std::string(":" + clients[fd]->getNickname() + "!" +
+						clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " PRIVMSG " +
+						channels_pos->second->getOGName() + " " + msg + "\n");
+					sendRPL_Channel(false, fd, channels_pos->first, rpl);
+				}
+				else {
+					sendRPL(fd, "irc.local", "442", clients[fd]->getNickname().c_str(),
+						original->c_str(), ":You're not on that channel", NULL);
+				}
+			} else {
+				sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
+						original->c_str(), ":No such channel", NULL);
 			}
 		}
 	}
@@ -421,29 +429,76 @@ void Server::mode(int fd, std::vector<std::string> arg)
 	}
 }
 
-// void	Server::topic(int fd, std::vector<std::string> arg){
-// 	if (arg.size() < 1){
-// 		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
-// 				"PART", ":Not enough parameters", NULL);
-// 		return ;
-// 	}
-// 	std::vector<std::string> channel_list;
-// 	std::string msg_on_leave;
-// 	try{
-// 		if (arg.size() >= 2)
-// 			channel_list = check_channel_name(fd, arg[1], "PART");
-// 		if (arg.size() >= 3){
-// 			ValidateMsgContent(fd, arg[2]);
-// 			msg_on_leave = arg[2];
-// 		}
-// 	}
-// 	catch (std::runtime_error & e){
-// 		std::cout << e.what() << std::endl;
-// 		if (DEBUG)
-// 			std::cout << info(std::string("Client " + to_string(fd) + " tried to leave a wrong Channel").c_str()) << std::endl;
-// 		return ;
-// 	}
-// }
+void	Server::topic(int fd, std::vector<std::string> arg){
+	if (arg.size() < 2){
+		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
+				"TOPIC", ":Not enough parameters", NULL);
+		return ;
+	}
+	std::vector<std::string> channel_list;
+	std::string channel;
+	std::string new_topic;
+	try{
+		channel_list = check_channel_name(fd, arg[1], "TOPIC");
+		if (channel_list.size() > 1){
+			sendRPL(fd, "irc.local", "407", clients[fd]->getNickname().c_str(),
+				arg[1].c_str(), ":Too many targets", NULL);
+			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to TOPIC too many channels").c_str()));
+		}
+		channel = channel_list[0];
+		if (arg.size() >= 3){
+			ValidateMsgContent(fd, arg[2]);
+			new_topic = arg[2];
+		}
+	}
+	catch (std::runtime_error & e){
+		std::cout << e.what() << std::endl;
+		if (DEBUG)
+			std::cout << info(std::string("Client " + to_string(fd) + " tried to topic a wrong Channel").c_str()) << std::endl;
+		return ;
+	}
+	std::string channel_lower = toLowerString(channel);
+	std::map<std::string, Channel*>::iterator channel_pos = channels.find(channel_lower);
+	if (channel_pos != channels.end()){
+		if (clients[fd]->getChannels().find(channel_lower) != clients[fd]->getChannels().end()){
+			if (arg.size() == 2)
+			{
+				if (!channels.at(channel_lower)->getTopic().empty()){
+					sendRPL(fd, "irc.local", "332", clients[fd]->getNickname().c_str(),
+							channel.c_str(), std::string(":" + channels.at(channel_lower)->getTopic()).c_str(), NULL);
+				}else{
+					sendRPL(fd, "irc.local", "331", clients[fd]->getNickname().c_str(),
+							channel.c_str(), ":No topic is set", NULL);
+				}
+			} else {
+				std::map<int, std::pair<Client *, bool> >::iterator client_pos = channel_pos->second->getClients().find(fd);
+				if (client_pos->second.second || !channel_pos->second->getIsTopicRestricted()){
+					new_topic = new_topic.substr(1);
+					channel_pos->second->setTopic(new_topic);
+					std::string rpl = std::string(":" + clients[fd]->getNickname() + "!" +
+						clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " TOPIC " +
+						channel + " :" + new_topic + "\n");
+					sendRPL_Channel(true, fd, channel_lower, rpl);
+				}
+				else {
+					sendRPL(fd, "irc.local", "482", clients[fd]->getNickname().c_str(),
+							channel.c_str(), ":You're not channel operator", NULL);
+				}
+			}
+		}
+		else {
+			sendRPL(fd, "irc.local", "442", clients[fd]->getNickname().c_str(),
+				channel.c_str(), ":You're not on that channel", NULL);
+		}
+	}
+	else {
+		sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
+				channel.c_str(), ":No such channel", NULL);
+	}
+	
+	if (DEBUG)
+		std::cout << info("Someone wants to topic") << std::endl;
+}
 
 void	Server::nick(int fd, const std::vector<std::string> arg)
 {
@@ -538,4 +593,111 @@ void Server::invite(int fd, std::vector<std::string> arg)
 	std::string inviteMsg = ":" + clients[fd]->getNickname() + " INVITE " + 
 		guestName + " :" + channelName;
 	send(guestClient->getClientfd(), inviteMsg.c_str(), inviteMsg.length(), 0);
+}
+
+void	Server::applykick(int fd, int kick_client_fd, std::string &channel_lower, std::string &kick_msg){
+	std::string rpl = std::string(":" + clients[fd]->getNickname() + "!" +
+		clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " KICK " +
+		channels[channel_lower]->getOGName() + " " + clients[kick_client_fd]->getNickname() + " " + kick_msg + "\n");
+	sendRPL_Channel(true, fd, channel_lower, rpl);
+	channels[channel_lower]->removeClient(kick_client_fd);
+	clients[kick_client_fd]->removeChannel(channel_lower);
+	if (channels[channel_lower]->getClients().size() == 0)
+		removeChannel(channel_lower);
+	clients[kick_client_fd]->updateCurrentChannel();
+}
+
+void	Server::kick(int fd, std::vector<std::string> arg){
+	if (arg.size() < 3){
+		sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
+				"KICK", ":Not enough parameters", NULL);
+		return ;
+	}
+	std::vector<std::string> channel_list;
+	std::vector<std::string> client_list;
+	std::string kick_msg = "";
+	try{
+		channel_list = check_channel_name(fd, arg[1], "PRIVMSG");
+		client_list = check_client_name(fd, arg[2]);
+		if (arg.size() >= 4){
+			if (arg[3].empty())
+				arg[3] = std::string(":") + clients[fd]->getNickname();
+			else if (arg[3][0] == ':')
+				arg[3] = clients[fd]->getNickname();
+			ValidateMsgContent(fd, arg[3]);
+			kick_msg = arg[3];
+		} else {
+			kick_msg = std::string(":") + clients[fd]->getNickname();
+		}
+	}
+	catch (std::runtime_error & e){
+		std::cout << e.what() << std::endl;
+		if (DEBUG)
+			std::cout << info(std::string("Client " + to_string(fd) + " tried to send a Wrong msg or in a wrong Channel").c_str()) << std::endl;
+		return ;
+	}
+	if (channel_list.empty() && !client_list.empty())
+		return ;
+	if (clients[fd]->getChannels().empty())
+		return ;
+	if (channel_list.size() > client_list.size() && client_list.size() != 1) {
+		sendRPL(fd, "irc.local", "407", clients[fd]->getNickname().c_str(),
+			arg[1].c_str(), ":Too many targets", NULL);
+		return ;
+	} else if (channel_list.size() < client_list.size() && channel_list.size() != 1) {
+		sendRPL(fd, "irc.local", "407", clients[fd]->getNickname().c_str(),
+			arg[2].c_str(), ":Too many targets", NULL);
+		return ;
+	}
+	std::vector<std::pair<std::string, std::string> > channel_list_lower = toLowerVector(channel_list);
+	std::vector<std::pair<std::string, std::string> > client_list_lower = toLowerVector(client_list);
+	size_t	max_size = 0;
+	if (channel_list_lower.size() >= client_list_lower.size())
+		max_size = channel_list_lower.size();
+	else
+		max_size = client_list_lower.size();
+	for (size_t i = 0; i < max_size; i++){
+		std::string *channel_lower, *channel_original, *client_lower, *client_original;
+		if (channel_list_lower.size() == client_list_lower.size()) {
+			channel_lower = &channel_list_lower[i].first;
+			channel_original = &channel_list_lower[i].second;
+			client_lower = &client_list_lower[i].first;
+			client_original = &client_list_lower[i].second;
+		} else if (channel_list_lower.size() == 1) {
+			channel_lower = &channel_list_lower[0].first;
+			channel_original = &channel_list_lower[0].second;
+			client_lower = &client_list_lower[i].first;
+			client_original = &client_list_lower[i].second;
+		} else if (client_list_lower.size() == 1) {
+			channel_lower = &channel_list_lower[i].first;
+			channel_original = &channel_list_lower[i].second;
+			client_lower = &client_list_lower[0].first;
+			client_original = &client_list_lower[0].second;
+		}
+		if (channels.find(*channel_lower) == channels.end()){
+			sendRPL(fd, "irc.local", "403", clients[fd]->getNickname().c_str(),
+				channel_original->c_str(), ":No such channel", NULL);
+			continue ;
+		}
+		if (clients[fd]->getChannels().find(*channel_lower) == clients[fd]->getChannels().end()){
+			sendRPL(fd, "irc.local", "442", clients[fd]->getNickname().c_str(),
+				channel_original->c_str(), ":You're not on that channel", NULL);
+			continue ;
+		}
+		std::map<std::string, std::pair<Client *, bool> >::iterator client_to_kick = channels[*channel_lower]->getClientMapOp().find(*client_lower);
+		if (client_to_kick == channels[*channel_lower]->getClientMapOp().end()){
+			sendRPL(fd, "irc.local", "441", clients[fd]->getNickname().c_str(),
+					client_original->c_str(), channel_original->c_str(), ":They aren't on that channel", NULL);
+			continue ;
+		}
+		std::map<int, std::pair<Client *, bool> >::iterator client_pos = channels[*channel_lower]->getClients().find(fd);
+		if (!client_pos->second.second){
+			sendRPL(fd, "irc.local", "482", clients[fd]->getNickname().c_str(),
+						channel_original->c_str(), ":You're not channel operator", NULL);
+			continue ;
+		}
+		applykick(fd, client_to_kick->second.first->getClientfd(), *channel_lower, kick_msg);
+	}
+	if (DEBUG)
+		std::cout << info("Someone wants to kick") << std::endl;
 }

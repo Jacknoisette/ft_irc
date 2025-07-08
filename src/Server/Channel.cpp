@@ -17,7 +17,7 @@ Channel::Channel()
 	, clients_list()
 	, ClientMapOp()
 	, isOnInvite(false)
-	, isTopicRestricted(false)
+	, isTopicRestricted(true)
 	, password("")
 	, channelLimit(0)
 {
@@ -28,7 +28,7 @@ Channel::Channel(std::string _name)
 	, clients_list()
 	, ClientMapOp()
 	, isOnInvite(false)
-	, isTopicRestricted(false)
+	, isTopicRestricted(true)
 	, password("")
 	, channelLimit(0)
 {
@@ -172,9 +172,9 @@ const std::string Channel::getListClientByType(void) const{
 	for (std::map<int, std::pair<Client*, bool> >::const_iterator client = clients_list.begin(); client != clients_list.end(); client++){
 		std::string name = client->second.first->getNickname();
 		if (client->second.second == true)
-			listop += ((client != clients_list.begin()) ? "@" : " @") + name;
+			listop += ((client != clients_list.begin()) ? " @" : "@") + name;
 		else
-			listclient += ((client != clients_list.begin()) ? "" : " ") + name;
+			listclient += ((client != clients_list.begin()) ? " " : "") + name;
 	}
 	list += listop + listclient;
 	return list;

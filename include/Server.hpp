@@ -74,7 +74,7 @@ class Server{
 
 		//CLIENT COMMAND
 		void	client_command(int client_fd, std::vector<std::vector<std::string> > &cmd_group);
-		void	check_BaseCmd(int fd, const std::vector<std::vector<std::string> > &cmd_group);
+		void	check_BaseCmd(int fd, std::vector<std::vector<std::string> > &cmd_group);
 		void	checkAuth(int fd, std::vector<std::vector<std::string> > &cmd_group);
 
 		//COMMAND LIST
@@ -85,9 +85,11 @@ class Server{
 		void	privmsg(int fd, std::vector<std::string> arg);
 		void	mode(int fd, std::vector<std::string> arg);
 		void	nick(int fd, std::vector<std::string> arg);
-		// void	topic(int fd, std::vector<std::string> arg);
 		void	invite(int fd, std::vector<std::string> arg);
+		void	topic(int fd, std::vector<std::string> arg);
+		void	kick(int fd, std::vector<std::string> arg);
 
+		void	applykick(int fd, int kick_client_fd, std::string &channel_lower, std::string &kick_msg);
 		//DEBUG
 		void	socket_debug(void);
 		void	command_debug(int client_fd, const std::vector<std::vector<std::string> > &cmd_group, const std::string& where);
