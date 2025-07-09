@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 11:22:34 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/09 11:07:30 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 14:10:42 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,6 +235,7 @@ void Server::sendRPL(int fd, ...)
 	const char *msg;
 	while ((msg = va_arg(args, const char *)) != NULL)
 		rpl += msg + std::string(" ");
+	rpl = rpl.substr(0, rpl.size() - 1);
 	rpl += "\r\n";
 	sendToClient(fd, rpl);
 	if (DEBUG)

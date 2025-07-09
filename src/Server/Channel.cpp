@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/13 10:20:01 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 16:04:19 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 13:22:50 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,6 +196,5 @@ const std::string Channel::getModeListAndKey(void) const{
 		list += " " + to_string(channelLimit);
 	if (list != "+" && password != "")
 		list += " " + password;
-	std::cout << list << std::endl;
 	return list;
 }

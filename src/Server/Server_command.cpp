@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 17:08:49 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/09 11:13:14 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 14:06:14 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,10 @@ void	Server::join(int fd, std::vector<std::string> arg){
 			key_list = check_key_string(fd, arg[2]);
 	}
 	catch (std::runtime_error & e){
-		std::cout << e.what() << std::endl;
-		if (DEBUG)
+		if (DEBUG){
+			std::cout << e.what() << std::endl;
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()) << std::endl;
+		}
 		return ;
 	}
 	std::vector<std::pair<std::string, std::string> > channel_list_lower = toLowerVector(channel_list);
@@ -125,9 +126,10 @@ void	Server::part(int fd, std::vector<std::string> arg){
 		}
 	}
 	catch (std::runtime_error & e){
-		std::cout << e.what() << std::endl;
-		if (DEBUG)
+		if (DEBUG){
+			std::cout << e.what() << std::endl;
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to leave a wrong Channel").c_str()) << std::endl;
+		}
 		return ;
 	}
 	if (clients[fd]->getChannels().empty())
@@ -202,9 +204,10 @@ void	Server::quit(int fd, std::vector<std::string> arg){
 		}
 	}
 	catch (std::runtime_error & e){
-		std::cout << e.what() << std::endl;
-		if (DEBUG)
+		if (DEBUG){
+			std::cout << e.what() << std::endl;
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to send a Wrong msg in QUIT").c_str()) << std::endl;
+		}
 		return ;
 	}
 	std::pair<int, std::string> client_leave;
@@ -248,9 +251,10 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 		msg = arg[2];
 	}
 	catch (std::runtime_error & e){
-		std::cout << e.what() << std::endl;
-		if (DEBUG)
+		if (DEBUG){
+			std::cout << e.what() << std::endl;
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to send a Wrong msg or in a wrong Channel").c_str()) << std::endl;
+		}
 		return ;
 	}
 	std::vector<std::string> already_sent;
@@ -316,9 +320,10 @@ void	Server::notice(int fd, std::vector<std::string> arg){
 		msg = arg[2];
 	}
 	catch (std::runtime_error & e){
-		std::cout << e.what() << std::endl;
-		if (DEBUG)
+		if (DEBUG){
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to send a Wrong NOTICE").c_str()) << std::endl;
+			std::cout << e.what() << std::endl;
+		}
 		return ;
 	}
 	std::vector<std::string> already_sent;
@@ -543,9 +548,11 @@ void	Server::topic(int fd, std::vector<std::string> arg){
 		}
 	}
 	catch (std::runtime_error & e){
-		std::cout << e.what() << std::endl;
-		if (DEBUG)
+		
+		if (DEBUG){
+			std::cout << e.what() << std::endl;
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to topic a wrong Channel").c_str()) << std::endl;
+		}
 		return ;
 	}
 	std::string channel_lower = toLowerString(channel);
@@ -616,12 +623,21 @@ void	Server::nick(int fd, const std::vector<std::string> arg)
 		sendRPL(fd, "irc.local", "433", arg[1].c_str(), ":Nickname is already in use", NULL);
 		return;
 	}
+	std::string rpl = std::string(":" + clients[fd]->getNickname() + "!" +
+		clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " NICK " +
+		":" + arg[1] + "\n");
+	std::string rpl2 = std::string(clients[fd]->getNickname() + "!" +
+		clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " NICK " +
+		":" + arg[1]);
+	for (std::map<std::string, std::pair<Channel *, size_t> >::iterator it = clients[fd]->getChannels().begin(); it != clients[fd]->getChannels().end(); it++){
+		sendRPL_Channel(false, fd, it->second.first->getName(), rpl);
+	}
+	sendRPL(fd, rpl2.c_str(), NULL);
 	if (strClients.find(clients[fd]->getNormalizedNick()) != strClients.end())
 		strClients.erase(clients[fd]->getNormalizedNick());
 	clients[fd]->setNickname(arg[1]);
 	clients[fd]->setNormalizedNick(toLowerString(arg[1]));
 	strClients[toLowerString(arg[1])] = clients[fd];
-	
 	if (DEBUG)
 		ultimateDebug();
 }
@@ -725,9 +741,11 @@ void	Server::kick(int fd, std::vector<std::string> arg){
 		}
 	}
 	catch (std::runtime_error & e){
-		std::cout << e.what() << std::endl;
 		if (DEBUG)
+		{
+			std::cout << e.what() << std::endl;
 			std::cout << info(std::string("Client " + to_string(fd) + " tried to send a Wrong msg or in a wrong Channel").c_str()) << std::endl;
+		}
 		return ;
 	}
 	if (channel_list.empty() && !client_list.empty())

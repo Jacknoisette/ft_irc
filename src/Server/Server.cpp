@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/09 12:18:31 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 13:30:13 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,10 +71,12 @@ Client*	Server::getOrCreateClient(const int fd){
 	allClients.push_back(Client(fd));
 	
 	Client* newClient = &allClients.back();
-	std::cout << std::flush << "list adr : " << std::showbase << std::hex << reinterpret_cast<uintptr_t>(&allClients.back()) << std::dec << std::endl;
+	if (DEBUG)
+		std::cout << std::flush << "list adr : " << std::showbase << std::hex << reinterpret_cast<uintptr_t>(&allClients.back()) << std::dec << std::endl;
 	
 	clients[fd] = newClient;
-	std::cout << std::flush << "new clientadr : " << std::showbase << std::hex << reinterpret_cast<uintptr_t>(clients[fd]) << std::dec << std::endl;
+	if (DEBUG)
+		std::cout << std::flush << "new clientadr : " << std::showbase << std::hex << reinterpret_cast<uintptr_t>(clients[fd]) << std::dec << std::endl;
 	
 	return newClient;
 }
@@ -120,15 +122,14 @@ void Server::setPort(int _port){
 void Server::removeChannel(std::string _channel_name){
 	if (channels.find(_channel_name) != channels.end()){
 		channels.erase(_channel_name);
-		std::cout << info(std::string("Channel " + _channel_name + ", is destroyed !").c_str())<< std::endl;
 	}
 	for (std::list<Channel>::iterator acIt = allChannels.begin(); acIt != allChannels.end(); ){
 		if (acIt->getName() == _channel_name)
 			acIt = allChannels.erase(acIt);
 		else
 			acIt++;
-		std::cout << info(std::string("Channel " + _channel_name + ", is destroyed !").c_str())<< std::endl;
 	}
+	std::cout << info(std::string("Channel " + _channel_name + ", is destroyed !").c_str())<< std::endl;
 }
 
 void Server::removeClient(int fd)
@@ -211,33 +212,3 @@ void Server::signalHandler(int sig)
 	return;
 }
 
-// void Server::enter_command(void){
-// 	updatePollfds();
-// 	int client_event_nbr = poll(pollfds.data(), clients.size(), -1);
-// 	updateClientPollfds();
-// 	if (client_event_nbr > 0){
-// 		for (size_t i = 0; i < clients.size(); i++)
-// 		{
-// 			if (clients[f].getPollfd().revents & POLLIN){
-// 				char line[BUFFER];
-// 				int read_size;
-// 				read_size = recv(clients[f].getPollfd().fd, line, BUFFER, 0);
-// 				if (read_size <= 0){
-// 					close(clients[f].getPollfd().fd);
-// 					clients[f].setPollfdFd(-1);
-// 					removeClient(i);	// if (client_fd != -1)
-	// 	close(client_fd);
-// 					--i;
-// 					std::cout << GREY << "A client leaved the irc server !" << RESET << std::endl;
-// 					continue ;
-// 				}
-// 				for (size_t j = 0; j < clients.size(); j++){
-// 					if (j != i)
-// 						send(clients[j].getPollfd().fd, line, read_size, 0);
-// 				}
-// 				std::cout << "Message reçu de " << clients[f].getPollfd().fd << " : "
-// 						<< std::string(line, read_size) << std::endl;
-// 			} 
-// 		}
-// 	}
-// }

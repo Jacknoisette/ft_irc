@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:19:42 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/09 11:21:15 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 13:28:46 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,6 @@ std::string Server::make_client_nonblock(int client_fd, sockaddr_in &client_addr
 			<< ":" << ntohs(client_addr.sin_port) 
 			<< " (fd=" << client_fd << ")" << std::endl;
 	}
-	
-	// int flags = fcntl(client_fd, F_GETFL, 0);
-	// if (flags == -1) {
-	// 	close(client_fd);
-	// 	throw std::runtime_error(error("Fcntl", "F_GETFL failed"));
-	// } 
 		
 	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
 		close(client_fd);
@@ -120,7 +114,8 @@ void Server::detect_client_input()
 					continue ;
 			}
 			catch (const std::runtime_error & e){
-				std::cout << e.what() << std::endl;
+				if (DEBUG)
+					std::cout << e.what() << std::endl;
 				continue ;
 			}
 			std::vector<std::string> group;
