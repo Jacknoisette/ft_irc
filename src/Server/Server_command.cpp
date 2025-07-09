@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/23 17:08:49 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 16:04:16 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 11:13:14 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -298,6 +298,63 @@ void	Server::privmsg(int fd, std::vector<std::string> arg){
 				if (!found_nick ){
 					sendRPL(fd, "irc.local", "401", clients[fd]->getNickname().c_str(),
 							original->c_str(), ":No such nick", NULL);
+				}
+			}
+		}
+	}
+}
+
+void	Server::notice(int fd, std::vector<std::string> arg){
+	if (arg.size() < 3){
+		return ;
+	}
+	std::vector<std::string> target_list;
+	std::string msg;
+	try{
+		target_list = check_channel_name_notice(fd, arg[1]);
+		ValidateMsgContentNotice(fd, arg[2]);
+		msg = arg[2];
+	}
+	catch (std::runtime_error & e){
+		std::cout << e.what() << std::endl;
+		if (DEBUG)
+			std::cout << info(std::string("Client " + to_string(fd) + " tried to send a Wrong NOTICE").c_str()) << std::endl;
+		return ;
+	}
+	std::vector<std::string> already_sent;
+	if (!target_list.empty()){
+		std::vector<std::pair<std::string, std::string> > target_list_lower = toLowerVector(target_list);
+		for (std::vector<std::pair<std::string, std::string> >::iterator it = target_list_lower.begin(); it != target_list_lower.end(); it++){
+			std::string *lower = &it->first;
+			std::vector<std::string>::iterator italready_sent = std::find(already_sent.begin(), already_sent.end(), (*lower));
+			if (italready_sent != already_sent.end()){
+				continue ;
+			}
+			already_sent.push_back((*lower));
+			if ((*lower)[0] == '#')
+			{
+				std::map<std::string, Channel*>::iterator channels_pos = channels.find(*lower);
+				if (channels_pos == channels.end()){
+					continue ;
+				}
+				if (clients[fd]->getChannels().find(*lower) == clients[fd]->getChannels().end()){
+					continue ;
+				}
+				std::string rpl = std::string(":" + clients[fd]->getNickname() + "!" +
+						clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " NOTICE " +
+						channels_pos->second->getOGName() + " " + msg + "\n");
+				sendRPL_Channel(false, fd, channels_pos->first, rpl);
+			} else {
+				for (std::map<int, Client*>::iterator clients_pos = clients.begin(); clients_pos != clients.end(); clients_pos++){
+					if (toLowerString(clients_pos->second->getNickname()) == (*lower)){
+						if (clients_pos->first == fd)
+							break ;
+						std::string rpl = std::string(clients[fd]->getNickname() + "!" +
+							clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " NOTICE " +
+							clients_pos->second->getNickname() + " " + msg);
+						sendRPL(clients_pos->first, rpl.c_str(), NULL);
+						break ;
+					}
 				}
 			}
 		}
@@ -630,7 +687,7 @@ void Server::invite(int fd, std::vector<std::string> arg)
 
 	std::string rpl = std::string(clients[fd]->getNickname() + "!" +
 		clients[fd]->getUsername() + "@" + clients[fd]->getHostname() + " INVITE " +
-			guestClient->getNickname() + " :" + channelName.c_str() + "\n");
+			guestClient->getNickname() + " :" + channelName.c_str());
 	sendRPL(guestClientFd, rpl.c_str(), NULL);
 }
 

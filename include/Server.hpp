@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 17:06:39 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 16:03:21 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 11:09:54 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ class Server{
 		void	quit(int fd, std::vector<std::string> arg);
 		void	ping(int fd, std::vector<std::string> arg);
 		void	privmsg(int fd, std::vector<std::string> arg);
+		void	notice(int fd, std::vector<std::string> arg);
 		void	mode(int fd, std::vector<std::string> arg);
 		void	nick(int fd, std::vector<std::string> arg);
 		void	invite(int fd, std::vector<std::string> arg);
@@ -97,9 +98,11 @@ class Server{
 
 		//PARSING_UTILS
 		std::vector<std::string>	check_channel_name(int fd, std::string arg, std::string cmd_name);
+		std::vector<std::string>	check_channel_name_notice(int fd, std::string arg);
 		std::vector<std::string>	check_client_name(int fd, std::string arg);
 		std::vector<std::string>	check_key_string(int fd, std::string arg);
 		void						ValidateMsgContent(int fd, std::string arg);
+		void						ValidateMsgContentNotice(int fd, std::string arg);
 		void 						client_name_parsing(int fd, std::string arg);
 
 		//RPL

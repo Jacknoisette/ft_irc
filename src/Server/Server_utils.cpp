@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 11:22:34 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 16:04:21 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 11:07:30 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,26 @@ std::vector<std::string> Server::check_channel_name(int fd, std::string arg, std
 		{
 			sendRPL(fd, "irc.local", "479", clients[fd]->getNickname().c_str(),
 					arg.c_str(), ":Channel name is invalid", NULL);
+			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+		}
+	}
+	return  parsing_channel(arg);
+}
+
+std::vector<std::string> Server::check_channel_name_notice(int fd, std::string arg)
+{
+	if (arg.size() > 50)
+	{
+		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+	}
+	if (arg.size() <= 1 && arg[0] == '#')
+	{
+		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+	}
+	for (size_t i = 0; i < arg.size(); i++)
+	{
+		if (arg[i] <= 32 || arg[i] == ':')
+		{
 			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 		}
 	}
@@ -138,6 +158,29 @@ void Server::ValidateMsgContent(int fd, std::string arg)
 		{
 			sendRPL(fd, "irc.local", "412", clients[fd]->getNickname().c_str(),
 					":No text to send", NULL);
+			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+		}
+	}
+}
+
+void Server::ValidateMsgContentNotice(int fd, std::string arg)
+{
+	if (arg.size() > 510)
+	{
+		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+	}
+	if (arg.size() <= 1)
+	{
+		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
+	}
+	if (arg[0] != ':')
+	{
+		throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Msg").c_str()));
+	}
+	for (size_t i = 0; i < arg.size(); i++)
+	{
+		if (arg[i] <= 31 && arg[i] != 9)
+		{
 			throw std::runtime_error(info(std::string("Client " + to_string(fd) + " tried to create a wrong Channel").c_str()));
 		}
 	}

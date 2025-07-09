@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:16:43 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 16:04:13 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 12:18:31 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ void Server::commandConfig(void){
 	cmd_func_list["QUIT"] = &Server::quit;
 	cmd_func_list["PING"] = &Server::ping;
 	cmd_func_list["PRIVMSG"] = &Server::privmsg;
+	cmd_func_list["NOTICE"] = &Server::notice;
 	cmd_func_list["MODE"] = &Server::mode;
 	cmd_func_list["NICK"] = &Server::nick;
 	cmd_func_list["INVITE"] = &Server::invite;
@@ -132,10 +133,11 @@ void Server::removeChannel(std::string _channel_name){
 
 void Server::removeClient(int fd)
 {
-	if (clients.find(fd) != clients.end() && strClients.find(clients[fd]->getNickname()) != strClients.end())
-	{
+	if (strClients.find(clients[fd]->getNickname()) != strClients.end()){
 		strClients.erase(clients[fd]->getNickname());
-		clients.erase(fd);
+	}
+	if (clients.find(fd) != clients.end()){
+		clients.erase(fd);	
 	}
 	for (std::vector<struct pollfd>::iterator it = pollfds.begin(); it != pollfds.end(); ){
 		if (it->fd == fd)

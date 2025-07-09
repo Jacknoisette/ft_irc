@@ -6,7 +6,7 @@
 /*   By: jdhallen <jdhallen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/19 14:19:42 by jdhallen          #+#    #+#             */
-/*   Updated: 2025/07/04 18:34:25 by jdhallen         ###   ########.fr       */
+/*   Updated: 2025/07/09 11:21:15 by jdhallen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,13 @@ std::string Server::make_client_nonblock(int client_fd, sockaddr_in &client_addr
 			<< " (fd=" << client_fd << ")" << std::endl;
 	}
 	
-	int flags = fcntl(client_fd, F_GETFL, 0);
-	if (flags == -1) {
-		close(client_fd);
-		throw std::runtime_error(error("Fcntl", "F_GETFL failed"));
-	} 
+	// int flags = fcntl(client_fd, F_GETFL, 0);
+	// if (flags == -1) {
+	// 	close(client_fd);
+	// 	throw std::runtime_error(error("Fcntl", "F_GETFL failed"));
+	// } 
 		
-	if (fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
 		close(client_fd);
 		throw std::runtime_error(error("Fnctl", "Socket failed to be non-block"));
 	}
@@ -166,7 +166,7 @@ void Server::detect_client_output()
 void	Server::take_out_the_trash(){
 	for (size_t i = 0; i < garbage.size(); i++)
 	{
-		std::string rpl = std::string(clients[garbage[i].first]->getNickname() + "!" +
+		std::string rpl = std::string(":" + clients[garbage[i].first]->getNickname() + "!" +
 			clients[garbage[i].first]->getUsername() + "@" + clients[garbage[i].first]->getHostname() + " QUIT " +
 			garbage[i].second.c_str() + "\n");
 		for (std::map<std::string, std::pair<Channel*, size_t> >::iterator it = clients[garbage[i].first]->getChannels().begin();
