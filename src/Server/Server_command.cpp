@@ -13,6 +13,7 @@
 #include "Global.hpp"
 #include "Server.hpp"
 #include <cctype>
+#include <exception>
 
 void	Server::join(int fd, std::vector<std::string> arg){
 	if (arg.size() < 2){
@@ -496,17 +497,24 @@ void Server::mode(int fd, std::vector<std::string> arg)
 							"MODE", ":Not enough parameters", NULL);
 					return;
 				}
-
-				unsigned long limit = strToNbr<unsigned long>(arg.at(3));
-				if (limit == 0)
+				try
 				{
-					sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
-							"MODE", ":Invalid limit value", NULL);
-					return;
+					long limit = strToNbr<long>(arg.at(3));
+					if (limit <= 0)
+					{
+						sendRPL(fd, "irc.local", "461", clients[fd]->getNickname().c_str(),
+								"MODE", ":Invalid limit value", NULL);
+						return;
+					}
+					currentChannel->second.first->setChannelLimit(limit);
+					sendRPL_Channel(true, fd, toLowerString(arg.at(1)), std::string(clients[fd]->getNickname()
+						+ " MODE " + arg.at(1) + " " + arg.at(2) + " " + arg.at(3) + " \n").c_str());
 				}
-				currentChannel->second.first->setChannelLimit(limit);
-				sendRPL_Channel(true, fd, toLowerString(arg.at(1)), std::string(clients[fd]->getNickname()
-					+ " MODE " + arg.at(1) + " " + arg.at(2) + " " + arg.at(3) + " \n").c_str());
+				catch (const std::exception& e)
+				{
+					sendRPL(fd, "irc.local", "501", clients[fd]->getNickname().c_str(),
+							"MODE", ":Invalid limit value", NULL);
+				}
 			}
 			else
 			{

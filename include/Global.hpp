@@ -62,8 +62,9 @@
 //TEMPLATE FUNCTION
 
 template <typename T>
-T	strToNbr(std::string str){
-    std::stringstream	Sstream(str);
+T	strToNbr(std::string str)
+{
+  std::stringstream	Sstream(str);
 	T    result;
 	char temp;
 

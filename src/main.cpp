@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include <exception>
 
 int main(int argc, char **argv)
 {
@@ -24,7 +25,7 @@ int main(int argc, char **argv)
 		server.server_creation();
 		while (1)
 			server.server_iteration();
-	} catch(const std::runtime_error &e) {
-		std::cout << e.what() << std::endl;
+	} catch(const std::exception& e) {
+		std::cerr << e.what() << std::endl;
 	}
 }
